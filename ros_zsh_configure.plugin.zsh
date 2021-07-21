@@ -13,3 +13,5 @@ export JAVA_HOME=/usr/lib/jvm/jdk-13
 export CLASSPATH=.:${JAVA_HOME}/lib
 export PATH=${JAVA_HOME}/bin:$PATH
 
+#Set MATLAB
+alias matlab='/home/banana/Polyspace/R2021a/bin/matlab'
