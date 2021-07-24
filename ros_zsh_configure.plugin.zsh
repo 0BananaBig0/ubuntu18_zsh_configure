@@ -15,3 +15,6 @@ export PATH=${JAVA_HOME}/bin:$PATH
 
 #Set MATLAB
 alias matlab='/home/banana/Polyspace/R2021a/bin/matlab &'
+
+#Set firefox
+alias firefox='firefox &'
