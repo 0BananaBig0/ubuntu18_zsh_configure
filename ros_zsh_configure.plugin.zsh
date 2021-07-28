@@ -18,3 +18,6 @@ alias matlab='/home/banana/Polyspace/R2021a/bin/matlab &'
 
 #Set firefox
 alias firefox='firefox &'
+
+#Set gdb
+alias gdb='gdb -q'
