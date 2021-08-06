@@ -21,3 +21,7 @@ alias firefox='firefox &'
 
 #Set gdb
 alias gdb='gdb -q'
+#Set CUDA
+export CUDA_HOME=/usr/local/cuda
+export PATH=$PATH:$CUDA_HOME/bin
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-11.4/lib64
