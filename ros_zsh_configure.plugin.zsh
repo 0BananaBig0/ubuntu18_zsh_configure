@@ -14,10 +14,10 @@ export CLASSPATH=.:${JAVA_HOME}/lib
 export PATH=${JAVA_HOME}/bin:$PATH
 
 #Set MATLAB
-alias matlab='/home/banana/Polyspace/R2021a/bin/matlab &'
+alias matlab='/home/banana/Polyspace/R2021a/bin/matlab >/dev/null 2>&1 &'
 
 #Set firefox
-alias firefox='firefox &'
+alias firefox='firefox >/dev/null 2>&1 &'
 
 #Set gdb
 alias gdb='gdb -q'
@@ -28,8 +28,9 @@ export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PAT
 
 
 #Set pycharm
-alias pycharm='/snap/pycharm-professional/254/bin/pycharm.sh &'
+alias pycharm='/snap/pycharm-professional/254/bin/pycharm.sh >/dev/null 2>&1 &'
 
 
-
+#Set gvim
+alias gvim='gvim >/dev/null 2>&1 &'
 
