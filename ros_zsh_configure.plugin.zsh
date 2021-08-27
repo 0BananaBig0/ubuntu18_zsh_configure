@@ -32,5 +32,5 @@ alias pycharm='/snap/pycharm-professional/254/bin/pycharm.sh >/dev/null 2>&1 &'
 
 
 #Set gvim
-alias gvim='gvim >/dev/null 2>&1 & -p'
+alias gvim='gvim -p >/dev/null 2>&1 &'
 
