@@ -34,3 +34,7 @@ alias pycharm='/snap/pycharm-professional/254/bin/pycharm.sh >/dev/null 2>&1 &'
 #Set gvim
 alias gvim='gvim -p'
 
+
+
+#Set PDF
+alias pdf='/home/banana/PDF-Studio-11/start &'
