@@ -38,3 +38,8 @@ alias gvim='gvim -p'
 
 #Set PDF
 alias pdf='/home/banana/PDF-Studio-11/start &'
+
+
+
+# set wine
+export WINEARCH=win32
