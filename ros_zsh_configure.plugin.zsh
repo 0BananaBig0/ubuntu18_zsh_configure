@@ -42,4 +42,9 @@ alias pdf='/home/banana/PDF-Studio-11/start &'
 
 
 # set wine
-export WINEARCH=win32
+# export WINEARCH=win32
+
+
+
+# set pip
+alias pip='python3 -m pip'
