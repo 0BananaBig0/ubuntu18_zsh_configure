@@ -37,7 +37,7 @@ alias gvim='gvim -p'
 
 
 #Set PDF
-alias pdf='/home/banana/PDF-Studio-11/start &'
+alias pdf='/home/banana/Downloads/program/PDF-Studio-11/start &'
 
 
 
