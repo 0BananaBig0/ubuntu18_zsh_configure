@@ -35,9 +35,9 @@ export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PAT
 
 
 
-#Set gvim
+#Set vim and gvim
 alias gvim='gvim -p'
-
+alias vim='vim -p'
 
 
 #Set PDF
