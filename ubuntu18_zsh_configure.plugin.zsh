@@ -38,7 +38,7 @@ export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PAT
 #Set vim and gvim
 alias gvim='gvim -p'
 alias vim='vim -p'
-
+alias vi='vim -p'
 
 #Set PDF
 alias pdf='/home/banana/Downloads/program/PDF-Studio-11/start &'
