@@ -14,11 +14,6 @@ source /home/banana/study_ws/devel/setup.zsh
 
 
 
-# Set firefox
-alias firefox='firefox >/dev/null 2>&1 &'
-
-
-
 # Set gdb
 alias gdb='gdb -q'
 
