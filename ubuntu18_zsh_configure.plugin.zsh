@@ -57,3 +57,10 @@ export GOPRIVATE=git.mycompany.com,github.com/my/private
 
 # Set Cargo
 export PATH=$PATH:~/.cargo/bin
+
+
+
+# Set vi-mode of terminal
+VI_MODE_RESET_PROMPT_ON_MODE_CHANGE=true
+MODE_INDICATOR="%F{white}<<<%f"
+
