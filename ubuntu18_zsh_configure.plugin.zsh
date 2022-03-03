@@ -37,9 +37,6 @@ alias gvim='gvim -p'
 alias nvim='nvim -p'
 alias gnvim='/home/banana/Downloads/program/Goneovim-v0.5.1-linux/goneovim -p'
 
-# Set PDF
-alias pdf='/home/banana/Downloads/program/PDF-Studio-11/start &'
-
 
 
 # Set pip
@@ -70,4 +67,3 @@ MODE_INDICATOR="%F{white}<<<%f"
 # if [ -x $HOME"/.cargo/bin/exa" ]; then
 #   alias 'ls'='exa'
 # fi
-
