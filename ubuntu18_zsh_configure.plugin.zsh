@@ -67,7 +67,7 @@ MODE_INDICATOR="%F{white}<<<%f"
 
 
 # Set exa
-if [ -x $HOME"/.cargo/bin/exa" ]; then
-  alias 'ls'='exa'
-fi
+# if [ -x $HOME"/.cargo/bin/exa" ]; then
+#   alias 'ls'='exa'
+# fi
 
