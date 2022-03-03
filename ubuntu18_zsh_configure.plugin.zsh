@@ -64,3 +64,10 @@ export PATH=$PATH:~/.cargo/bin
 VI_MODE_RESET_PROMPT_ON_MODE_CHANGE=true
 MODE_INDICATOR="%F{white}<<<%f"
 
+
+
+# Set exa
+if [ -x $HOME"/.cargo/bin/exa" ]; then
+  alias 'ls'='exa'
+fi
+
