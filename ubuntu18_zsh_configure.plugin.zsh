@@ -45,10 +45,11 @@ alias pip='python3 -m pip'
 
 
 # Set Go language
+export GO111MODULE=on
 # Set the GOPROXY environment variable
 export GOPROXY=https://goproxy.io,direct
 # Set environment variable allow bypassing the proxy for specified repos (optional)
-export GOPRIVATE=git.mycompany.com,github.com/my/private
+# export GOPRIVATE=git.mycompany.com,github.com/my/private
 
 
 
@@ -67,3 +68,6 @@ MODE_INDICATOR="%F{white}<<<%f"
 # if [ -x $HOME"/.cargo/bin/exa" ]; then
 #   alias 'ls'='exa'
 # fi
+
+
+
