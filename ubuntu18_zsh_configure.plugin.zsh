@@ -35,7 +35,7 @@ alias vi='vi -p'
 alias vim='vim -p'
 alias gvim='gvim -p'
 alias nvim='nvim -p'
-alias gnvim='/home/banana/Downloads/program/Goneovim-v0.5.1-linux/goneovim -p'
+alias gnvim='/home/banana/Downloads/program/goneovim-linux/goneovim -p'
 
 
 
