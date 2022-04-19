@@ -69,5 +69,5 @@ MODE_INDICATOR="%F{white}<<<%f"
 #   alias 'ls'='exa'
 # fi
 
-
-
+#add new dynamic library
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
