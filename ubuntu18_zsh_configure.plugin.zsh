@@ -40,7 +40,7 @@ alias pip='python3 -m pip'
 
 
 # Set Go language
-export GOPATH="$HOME/.go"
+export GOPATH="$HOME/.local/.go"
 export PATH="$PATH:${GOPATH//://bin:}/bin"
 export GO111MODULE=on
 # Set the GOPROXY environment variable
