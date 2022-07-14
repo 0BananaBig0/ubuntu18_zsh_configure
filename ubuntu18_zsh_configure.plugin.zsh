@@ -47,11 +47,17 @@ export GO111MODULE=on
 export GOPROXY=https://goproxy.io,direct
 # Set environment variable allow bypassing the proxy for specified repos (optional)
 # export GOPRIVATE=git.mycompany.com,github.com/my/private
+if [ `whoami` = "root" ];then
+  export PATH="$PATH:/home/banana/.local/.go/bin"
+fi
 
 
 
 # Set Cargo
 export PATH=$PATH:~/.cargo/bin
+if [ `whoami` = "root" ];then
+  export PATH="$PATH:/home/banana/.cargo/bin"
+fi
 
 
 
@@ -63,4 +69,5 @@ MODE_INDICATOR="%F{white}<<<%f"
 
 #add new dynamic library
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+
 
