@@ -25,11 +25,6 @@ export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PAT
 
 
 
-# Set pycharm
-# alias pycharm='/snap/pycharm-professional/254/bin/pycharm.sh >/dev/null 2>&1 &'
-
-
-
 # Set vim , gvim and goneovim
 alias vi='vi -p'
 alias vim='vim -p'
@@ -45,6 +40,8 @@ alias pip='python3 -m pip'
 
 
 # Set Go language
+export GOPATH="$HOME/.go"
+export PATH="$PATH:${GOPATH//://bin:}/bin"
 export GO111MODULE=on
 # Set the GOPROXY environment variable
 export GOPROXY=https://goproxy.io,direct
@@ -64,10 +61,6 @@ MODE_INDICATOR="%F{white}<<<%f"
 
 
 
-# Set exa
-# if [ -x $HOME"/.cargo/bin/exa" ]; then
-#   alias 'ls'='exa'
-# fi
-
 #add new dynamic library
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+
