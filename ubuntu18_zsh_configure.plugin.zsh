@@ -74,3 +74,6 @@ MODE_INDICATOR="%F{white}<<<%f"
 
 #add new dynamic library
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+
+
+
