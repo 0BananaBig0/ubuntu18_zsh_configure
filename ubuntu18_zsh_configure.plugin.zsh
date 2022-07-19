@@ -1,8 +1,10 @@
 # Set ROS melodic
 if [ -x "/opt/ros/melodic/setup.zsh" ]; then
   source /opt/ros/melodic/setup.zsh
+fi
 if [ -x "/home/banana/catkin_ws/devel/setup.zsh" ]; then
   source /home/banana/catkin_ws/devel/setup.zsh
+fi
 if [ -x "/home/banana/study_ws/devel/setup.zsh" ]; then
   source /home/banana/study_ws/devel/setup.zsh
 fi
@@ -74,3 +76,4 @@ MODE_INDICATOR="%F{white}<<<%f"
 
 #add new dynamic library
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+
