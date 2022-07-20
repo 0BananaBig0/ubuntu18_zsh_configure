@@ -79,4 +79,8 @@ MODE_INDICATOR="%F{white}<<<%f"
 # add env
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 PATH=$PATH:$HOME/.local/bin
+if [ `whoami` = "root" ];then
+  export PATH="$PATH:/home/banana/.local/bin"
+fi
+
 
