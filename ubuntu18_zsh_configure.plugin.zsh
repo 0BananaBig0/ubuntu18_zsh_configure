@@ -64,7 +64,9 @@ export PATH=$PATH:~/.cargo/bin
 if [ `whoami` = "root" ];then
   export PATH="$PATH:/home/banana/.cargo/bin"
 fi
-eval "$(zoxide init zsh)"
+if command -v zoxide >/dev/null 2>&1;then
+  eval "$(zoxide init zsh)"
+fi
 
 
 
@@ -74,6 +76,7 @@ MODE_INDICATOR="%F{white}<<<%f"
 
 
 
-#add new dynamic library
+# add env
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+PATH=$PATH:$HOME/.local/bin
 
