@@ -54,7 +54,9 @@ export GOPROXY=https://goproxy.io,direct
 # Set environment variable allow bypassing the proxy for specified repos (optional)
 # export GOPRIVATE=git.mycompany.com,github.com/my/private
 if [ `whoami` = "root" ];then
-  export PATH="$PATH:/home/banana/.local/.go/bin"
+  if [ -s "/home/banana/.local/.go" ]; then
+    export PATH="$PATH:/home/banana/.local/.go/bin"
+  fi
 fi
 
 
@@ -62,7 +64,9 @@ fi
 # Set Cargo
 export PATH=$PATH:~/.cargo/bin
 if [ `whoami` = "root" ];then
-  export PATH="$PATH:/home/banana/.cargo/bin"
+  if [ -s "/home/banana/.cargo" ]; then
+    export PATH="$PATH:/home/banana/.cargo/bin"
+  fi
 fi
 if command -v zoxide >/dev/null 2>&1;then
   eval "$(zoxide init zsh)"
@@ -77,10 +81,24 @@ MODE_INDICATOR="%F{white}<<<%f"
 
 
 # add env
-LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
-PATH=$PATH:$HOME/.local/bin
-if [ `whoami` = "root" ];then
-  export PATH="$PATH:/home/banana/.local/bin"
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
+export XDG_DATA_DIRS=$XDG_DATA_DIRS:/usr/local/share
+if [ -s "~/.local" ]; then
+  #add local bin of normal user.
+  export PATH=$PATH:~/.local/bin
+  #add new dynamic library
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/.local/lib
+  #add man information
+  export XDG_DATA_DIRS=$XDG_DATA_DIRS:~/.local/share
 fi
-
+if [ `whoami` = "root" ];then
+  if [ -s "/home/banana/.local" ];then
+    #add local bin of normal user.
+    export PATH="$PATH:/home/banana/.local/bin"
+    #add new dynamic library
+    export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/home/banana/.local/lib
+    #add man information
+    export XDG_DATA_DIRS=$XDG_DATA_DIRS:/home/banana/.local/share
+  fi
+fi
 
