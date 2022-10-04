@@ -101,4 +101,3 @@ if [ `whoami` = "root" ];then
     export XDG_DATA_DIRS=$XDG_DATA_DIRS:/home/banana/.local/share
   fi
 fi
-
