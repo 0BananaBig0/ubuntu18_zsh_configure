@@ -62,7 +62,7 @@ fi
 
 
 # Set Cargo
-export PATH=$PATH:~/.cargo/bin
+export PATH=$PATH:$HOME/.cargo/bin
 if [ `whoami` = "root" ];then
   if [ -s "/home/banana/.cargo" ]; then
     export PATH="$PATH:/home/banana/.cargo/bin"
@@ -83,13 +83,13 @@ MODE_INDICATOR="%F{white}<<<%f"
 # add env
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/lib
 export XDG_DATA_DIRS=$XDG_DATA_DIRS:/usr/local/share
-if [ -s "~/.local" ]; then
+if [ -s "$HOME/.local" ]; then
   #add local bin of normal user.
-  export PATH=$PATH:~/.local/bin
+  export PATH=$PATH:$HOME/.local/bin
   #add new dynamic library
-  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:~/.local/lib
+  export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/.local/lib
   #add man information
-  export XDG_DATA_DIRS=$XDG_DATA_DIRS:~/.local/share
+  export XDG_DATA_DIRS=$XDG_DATA_DIRS:$HOME/.local/share
 fi
 if [ `whoami` = "root" ];then
   if [ -s "/home/banana/.local" ];then
