@@ -101,3 +101,10 @@ if [ `whoami` = "root" ];then
     export XDG_DATA_DIRS=$XDG_DATA_DIRS:/home/banana/.local/share
   fi
 fi
+
+
+# support wsl2 gui applications
+if grep -q WSL2 /proc/version; then
+  LOCAL_IP=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}')
+  export DISPLAY=$LOCAL_IP:0
+fi
