@@ -106,8 +106,9 @@ fi
 
 # support wsl2 gui applications
 if grep -q WSL2 /proc/version; then
-  LOCAL_IP=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}')
-  export DISPLAY=$LOCAL_IP:0
+  # LOCAL_IP=$(cat /etc/resolv.conf | grep nameserver | awk '{print $2}')
+  # export DISPLAY=$LOCAL_IP:0
+  export DISPLAY=:0
   # for wsl2 vscode
   export DONT_PROMPT_WSL_INSTALL=1
 fi
