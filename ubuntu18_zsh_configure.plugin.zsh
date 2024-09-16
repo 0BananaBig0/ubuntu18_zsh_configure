@@ -1,6 +1,9 @@
 # Set ROS melodic
 if [ -x "/opt/ros/melodic/setup.zsh" ]; then
   source /opt/ros/melodic/setup.zsh
+  # Set ROS Network
+  export ROS_HOSTNAME=$(hostname -I | awk '{print $1}')
+  export ROS_MASTER_URI=http://${ROS_HOSTNAME}:11311
 fi
 if [ -x "$HOME/catkin_ws/devel/setup.zsh" ]; then
   source $HOME/catkin_ws/devel/setup.zsh
@@ -8,10 +11,6 @@ fi
 if [ -x "$HOME/study_ws/devel/setup.zsh" ]; then
   source $HOME/study_ws/devel/setup.zsh
 fi
-# Set ROS Network
-#ifconfig查看你的电脑ip地址
-# export ROS_HOSTNAME=192.168.3.3
-# export ROS_MASTER_URI=http://${ROS_HOSTNAME}:11311
 
 
 
@@ -56,7 +55,8 @@ export GO111MODULE=on
 export GOPROXY=https://goproxy.io,direct
 # Set environment variable allow bypassing the proxy for specified repos (optional)
 # export GOPRIVATE=git.mycompany.com,github.com/my/private
-if [ `whoami` = "root" ];then
+# Using `whoami` = "root" to replace "$(id -u)" == 0 is also ok.
+if [ "$(id -u)" == 0 ];then
   if [ -s "$HOME/.local/.go" ]; then
     export PATH="$PATH:$HOME/.local/.go/bin"
   fi
@@ -66,7 +66,7 @@ fi
 
 # Set Cargo
 export PATH=$PATH:$HOME/.cargo/bin
-if [ `whoami` = "root" ];then
+if [ "$(id -u)" == 0 ];then
   if [ -s "$HOME/.cargo" ]; then
     export PATH="$PATH:$HOME/.cargo/bin"
   fi
@@ -94,7 +94,7 @@ if [ -s "$HOME/.local" ]; then
   #add man information
   export XDG_DATA_DIRS=$XDG_DATA_DIRS:$HOME/.local/share
 fi
-if [ `whoami` = "root" ];then
+if [ "$(id -u)" == 0 ];then
   if [ -s "$HOME/.local" ];then
     #add local bin of normal user.
     export PATH="$PATH:$HOME/.local/bin"
@@ -135,4 +135,5 @@ then
              echo "failed to start xrdp service!"
      fi
 fi
+
 
