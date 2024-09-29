@@ -127,13 +127,13 @@ PERL_MM_OPT="INSTALL_BASE=$HOME/perl5"; export PERL_MM_OPT;
 
 
 # 启动xrdp服务
-if [ -f /etc/init.d/xrdp ] && [ "$(id -u)" != 0 ] && [ -z "$(pgrep xrdp-sesman)" ]
-then
-     echo "1230" | sudo -S /etc/init.d/xrdp start
-     if [ $? -ne 0 ]
-     then
-             echo "failed to start xrdp service!"
-     fi
-fi
+# if [ -f /etc/init.d/xrdp ] && [ "$(id -u)" != 0 ] && [ -z "$(pgrep xrdp-sesman)" ]
+# then
+#      echo "1230" | sudo -S /etc/init.d/xrdp start
+#      if [ $? -ne 0 ]
+#      then
+#              echo "failed to start xrdp service!"
+#      fi
+# fi
 
 
