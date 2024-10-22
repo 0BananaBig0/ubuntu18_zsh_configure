@@ -28,8 +28,10 @@ alias gdb='gdb -q'
 
 
 # Set CUDA
-export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
-export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+if [ -f /usr/local/cuda ]
+  export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
+  export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+fi
 
 
 
@@ -42,8 +44,9 @@ alias gnvim='$HOME/Downloads/program/goneovim-linux/goneovim -p'
 
 
 
-# Set pip
+# Set pip and pipx
 alias pip='python3 -m pip'
+alias pipx='python3 -m pipx'
 
 
 
@@ -135,5 +138,16 @@ PERL_MM_OPT="INSTALL_BASE=$HOME/perl5"; export PERL_MM_OPT;
 #              echo "failed to start xrdp service!"
 #      fi
 # fi
+
+
+
+# Configure Qt6
+if [ -f $HOME/.Qt6 ]
+  export PATH=${PATH}:$HOME/.Qt6/Tools/QtCreator/bin
+  export LIBRARY_PATH=${LIBRARY_PATH}:$HOME/.Qt6/6.8.0/gcc_64/lib # Load at compile time
+  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$HOME/.Qt6/6.8.0/gcc_64/lib # Load at run time
+  export C_INCLUDE_PATH=${C_INCLUDE_PATH}:$HOME/.Qt6/6.8.0/gcc_64/include # Load at compile time
+  export CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:$HOME/.Qt6/6.8.0/gcc_64/include # Load at compile time
+fi
 
 
