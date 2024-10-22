@@ -15,7 +15,7 @@ fi
 
 
 # Set MATLAB
-if [ -f $HOME/Polyspace/R2021a/bin/matlab ]; then
+if [ -d $HOME/Polyspace/R2021a/bin ]; then
   alias matlab='$HOME/Polyspace/R2021a/bin/matlab >/dev/null 2>&1 &'
 fi
 
@@ -27,7 +27,7 @@ alias gdb='gdb -q'
 
 
 # Set CUDA
-if [ -f /usr/local/cuda ]; then
+if [ -d /usr/local/cuda ]; then
   export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
   export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
 fi
@@ -127,7 +127,7 @@ PERL_MM_OPT="INSTALL_BASE=$HOME/perl5"; export PERL_MM_OPT;
 
 
 # Configure Qt6
-if [ -f $HOME/.Qt6 ]; then
+if [ -d ${HOME}/.Qt6 ]; then
   export PATH=${PATH}:$HOME/.Qt6/Tools/QtCreator/bin
   export LIBRARY_PATH=${LIBRARY_PATH}:$HOME/.Qt6/6.8.0/gcc_64/lib # Load at compile time
   export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$HOME/.Qt6/6.8.0/gcc_64/lib # Load at run time
