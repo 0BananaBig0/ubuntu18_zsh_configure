@@ -138,7 +138,7 @@ fi
 
 # Configure Qt6
 if [ -d ${HOME}/.Qt6 ]; then
-  export PATH=${PATH}:$HOME/.Qt6/Tools/QtCreator/bin
+  export PATH=${PATH}:$HOME/.Qt6/Tools/QtCreator/bin:$HOME/.Qt6/6.8.0/gcc_64/bin
   export LIBRARY_PATH=${LIBRARY_PATH}:$HOME/.Qt6/6.8.0/gcc_64/lib # Load at compile time
   export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$HOME/.Qt6/6.8.0/gcc_64/lib # Load at run time
   export C_INCLUDE_PATH=${C_INCLUDE_PATH}:$HOME/.Qt6/6.8.0/gcc_64/include # Load at compile time
