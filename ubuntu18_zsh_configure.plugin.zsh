@@ -126,16 +126,6 @@ PERL_MM_OPT="INSTALL_BASE=$HOME/perl5"; export PERL_MM_OPT;
 
 
 
-# Configure LDFLAGS
-if ldconfig -p | grep -q "libOpenCL.so"; then
-  export LDFLAGS="$LDFLAGS -lOpenCL"
-fi
-if ldconfig -p | grep -q "libboost_program_options"; then
-  export LDFLAGS="$LDFLAGS -lboost_program_options"
-fi
-
-
-
 # Configure Qt6
 if [ -d ${HOME}/.Qt6 ]; then
   export PATH=${PATH}:$HOME/.Qt6/Tools/QtCreator/bin:$HOME/.Qt6/6.8.0/gcc_64/bin
