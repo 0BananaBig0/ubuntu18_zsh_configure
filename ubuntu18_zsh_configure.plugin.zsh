@@ -133,5 +133,4 @@ if [ -d ${HOME}/.Qt6 ]; then
   export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$HOME/.Qt6/6.8.0/gcc_64/lib # Load at run time
   export C_INCLUDE_PATH=${C_INCLUDE_PATH}:$HOME/.Qt6/6.8.0/gcc_64/include # Load at compile time
   export CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:$HOME/.Qt6/6.8.0/gcc_64/include # Load at compile time
-  export LDFLAGS="$LDFLAGS -lQt6Core"
 fi
