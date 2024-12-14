@@ -120,10 +120,10 @@ if [ -d ${HOME}/wsl_shared_folder/.Qt6 ]; then
     [[ -d "$dir" && ":$C_INCLUDE_PATH:" != *":$dir/include:"* ]] && C_INCLUDE_PATH="$C_INCLUDE_PATH:$dir/include"
     [[ -d "$dir" && ":$CPLUS_INCLUDE_PATH:" != *":$dir/include:"* ]] && CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:$dir/include"
   done
-  for dir in $QTDIR/*/gcc_64/include/*; do
-    [[ -d "$dir" && ":$C_INCLUDE_PATH:" != *":$dir:"* ]] && C_INCLUDE_PATH="$C_INCLUDE_PATH:$dir"
-    [[ -d "$dir" && ":$CPLUS_INCLUDE_PATH:" != *":$dir:"* ]] && CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:$dir"
-  done
+  # for dir in $QTDIR/*/gcc_64/include/*; do
+  #   [[ -d "$dir" && ":$C_INCLUDE_PATH:" != *":$dir:"* ]] && C_INCLUDE_PATH="$C_INCLUDE_PATH:$dir"
+  #   [[ -d "$dir" && ":$CPLUS_INCLUDE_PATH:" != *":$dir:"* ]] && CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:$dir"
+  # done
   export QT_QPA_PLATFORM=xcb # Not use wayland
 fi
 
