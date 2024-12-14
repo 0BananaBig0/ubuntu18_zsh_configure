@@ -103,14 +103,27 @@ fi
 
 
 
-# Configure Qt6
-if [ -d ${HOME}/.Qt6 ]; then
+if [ -d ${HOME}/wsl_shared_folder/.Qt6 ]; then
   export QTDIR=${HOME}/wsl_shared_folder/.Qt6   # Replace with your Qt install path
-  export PATH=${PATH}:$QTDIR/Tools/QtCreator/bin:$QTDIR/6.8.1/gcc_64/bin
-  export LIBRARY_PATH=${LIBRARY_PATH}:$QTDIR/6.8.1/gcc_64/lib # Load at compile time
-  export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:$QTDIR/6.8.1/gcc_64/lib # Load at run time
-  QT_INCLUDE_DIRS=$(echo $QTDIR/6.8.1/gcc_64/include/*(/) | tr ' ' ':' | sed 's/:$//')
-  export C_INCLUDE_PATH=${C_INCLUDE_PATH}:$QTDIR/6.8.1/gcc_64/include:$QT_INCLUDE_DIRS # Load at compile time
-  export CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:$QTDIR/6.8.1/gcc_64/include:$QT_INCLUDE_DIRS # Load at compile time
+  export PATH=${PATH}:$QTDIR/Tools/QtCreator/bin
+  for dir in $QTDIR/*/gcc_64; do
+    [[ -d "$dir" && ":$PATH:" != *":$dir/bin:"* ]] && PATH="$PATH:$dir/bin"
+    [[ -d "$dir" && ":$LIBRARY_PATH:" != *":$dir/lib:"* ]] && LIBRARY_PATH="$LIBRARY_PATH:$dir/lib"
+    [[ -d "$dir" && ":$LD_LIBRARY_PATH:" != *":$dir/lib:"* ]] && LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$dir/lib"
+    [[ -d "$dir" && ":$C_INCLUDE_PATH:" != *":$dir/include:"* ]] && C_INCLUDE_PATH="$C_INCLUDE_PATH:$dir/include"
+    [[ -d "$dir" && ":$CPLUS_INCLUDE_PATH:" != *":$dir/include:"* ]] && CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:$dir/include"
+  done
+  for dir in $QTDIR/*/gcc_64/include/*; do
+    [[ -d "$dir" && ":$C_INCLUDE_PATH:" != *":$dir:"* ]] && C_INCLUDE_PATH="$C_INCLUDE_PATH:$dir"
+    [[ -d "$dir" && ":$CPLUS_INCLUDE_PATH:" != *":$dir:"* ]] && CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:$dir"
+  done
   export QT_QPA_PLATFORM=xcb # Not use wayland
+fi
+
+
+
+if [ -d ${HOME}/.local/share/gem/ruby ]; then
+  for dir in ${HOME}/.local/share/gem/ruby/*; do
+    [[ -d "$dir" && ":$PATH:" != *":$dir/bin:"* ]] && PATH="$PATH:$dir/bin"
+  done
 fi
