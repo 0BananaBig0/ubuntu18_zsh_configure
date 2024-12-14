@@ -130,7 +130,7 @@ fi
 
 
 if [ -d ${HOME}/.local/share/gem/ruby ]; then
-  for dir in ${HOME}/.local/share/gem/ruby/*; do
-    [[ -d "$dir" && ":$PATH:" != *":$dir/bin:"* ]] && PATH="$PATH:$dir/bin"
+  for dir in ${HOME}/.local/share/gem/ruby/*/gems/*/exe; do
+    [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$PATH:$dir"
   done
 fi
