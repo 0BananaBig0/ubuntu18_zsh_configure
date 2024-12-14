@@ -1,3 +1,10 @@
+export LIBRARY_PATH=$LIBRARY_PATH
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH
+export C_INCLUDE_PATH=$C_INCLUDE_PATH
+export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH
+
+
+
 # Set ROS melodic
 if [ -x "/opt/ros/melodic/setup.zsh" ]; then
   source /opt/ros/melodic/setup.zsh
