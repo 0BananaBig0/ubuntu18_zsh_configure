@@ -39,13 +39,6 @@ alias vi='vi -p'
 alias vim='vim -p'
 alias gvim='gvim -p'
 alias nvim='nvim -p'
-alias gnvim='$HOME/Downloads/program/goneovim-linux/goneovim -p'
-
-
-
-# Set pip and pipx
-alias pip='python3 -m pip'
-alias pipx='python3 -m pipx'
 
 
 
@@ -118,11 +111,13 @@ fi
 
 
 
-PATH="$HOME/perl5/bin${PATH:+:${PATH}}"; export PATH;
-PERL5LIB="$HOME/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"; export PERL5LIB;
-PERL_LOCAL_LIB_ROOT="$HOME/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"; export PERL_LOCAL_LIB_ROOT;
-PERL_MB_OPT="--install_base \"$HOME/perl5\""; export PERL_MB_OPT;
-PERL_MM_OPT="INSTALL_BASE=$HOME/perl5"; export PERL_MM_OPT;
+if [ -d ${HOME}/perl5 ]; then
+  PATH="$HOME/perl5/bin${PATH:+:${PATH}}"; export PATH;
+  PERL5LIB="$HOME/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"; export PERL5LIB;
+  PERL_LOCAL_LIB_ROOT="$HOME/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"; export PERL_LOCAL_LIB_ROOT;
+  PERL_MB_OPT="--install_base \"$HOME/perl5\""; export PERL_MB_OPT;
+  PERL_MM_OPT="INSTALL_BASE=$HOME/perl5"; export PERL_MM_OPT;
+fi
 
 
 
@@ -136,4 +131,3 @@ if [ -d ${HOME}/.Qt6 ]; then
   export CPLUS_INCLUDE_PATH=${CPLUS_INCLUDE_PATH}:$HOME/.Qt6/6.8.1/gcc_64/include:$QT_INCLUDE_DIRS # Load at compile time
   export QT_QPA_PLATFORM=xcb # Not use wayland
 fi
-
