@@ -2,6 +2,7 @@ export LIBRARY_PATH=$LIBRARY_PATH
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 export C_INCLUDE_PATH=$C_INCLUDE_PATH
 export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH
+export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH
 
 
 
@@ -36,6 +37,7 @@ alias gdb='gdb -q'
 if [ -d /usr/local/cuda ]; then
   export PATH=/usr/local/cuda/bin${PATH:+:${PATH}}
   export LD_LIBRARY_PATH=/usr/local/cuda/lib64${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}
+  export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH:/usr/local/cuda/lib64/cmake
 fi
 
 
@@ -111,16 +113,17 @@ fi
 
 
 if [ -d ${HOME}/wsl_shared_folder/.Qt6 ]; then
-  export QTDIR=${HOME}/wsl_shared_folder/.Qt6   # Replace with your Qt install path
-  export PATH=${PATH}:$QTDIR/Tools/QtCreator/bin
-  for dir in $QTDIR/*/gcc_64; do
+  export Qt6_DIR=${HOME}/wsl_shared_folder/.Qt6   # Replace with your Qt install path
+  export PATH=${PATH}:$Qt6_DIR/Tools/QtCreator/bin
+  for dir in $Qt6_DIR/*/gcc_64; do
     [[ -d "$dir" && ":$PATH:" != *":$dir/bin:"* ]] && PATH="$PATH:$dir/bin"
     [[ -d "$dir" && ":$LIBRARY_PATH:" != *":$dir/lib:"* ]] && LIBRARY_PATH="$LIBRARY_PATH:$dir/lib"
     [[ -d "$dir" && ":$LD_LIBRARY_PATH:" != *":$dir/lib:"* ]] && LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$dir/lib"
     [[ -d "$dir" && ":$C_INCLUDE_PATH:" != *":$dir/include:"* ]] && C_INCLUDE_PATH="$C_INCLUDE_PATH:$dir/include"
     [[ -d "$dir" && ":$CPLUS_INCLUDE_PATH:" != *":$dir/include:"* ]] && CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:$dir/include"
+    [[ -d "$dir" && ":$CMAKE_PREFIX_PATH:" != *":$dir/lib/cmake:"* ]] && CMAKE_PREFIX_PATH="$CMAKE_PREFIX_PATH:$dir/lib/cmake"
   done
-  # for dir in $QTDIR/*/gcc_64/include/*; do
+  # for dir in $Qt6_DIR/*/gcc_64/include/*; do
   #   [[ -d "$dir" && ":$C_INCLUDE_PATH:" != *":$dir:"* ]] && C_INCLUDE_PATH="$C_INCLUDE_PATH:$dir"
   #   [[ -d "$dir" && ":$CPLUS_INCLUDE_PATH:" != *":$dir:"* ]] && CPLUS_INCLUDE_PATH="$CPLUS_INCLUDE_PATH:$dir"
   # done
