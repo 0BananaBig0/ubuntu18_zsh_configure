@@ -112,8 +112,8 @@ fi
 
 
 
-if [ -d ${HOME}/wsl_shared_folder/.Qt6 ]; then
-  export Qt6_DIR=${HOME}/wsl_shared_folder/.Qt6   # Replace with your Qt install path
+if [ -d ${HOME}/.Qt6 ]; then
+  export Qt6_DIR=${HOME}/.Qt6   # Replace with your Qt install path
   export PATH=${PATH}:$Qt6_DIR/Tools/QtCreator/bin
   for dir in $Qt6_DIR/*/gcc_64; do
     [[ -d "$dir" && ":$PATH:" != *":$dir/bin:"* ]] && PATH="$PATH:$dir/bin"
