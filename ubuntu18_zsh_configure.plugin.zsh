@@ -1,3 +1,4 @@
+# Initialize some envs
 export LIBRARY_PATH=$LIBRARY_PATH # for static libraries
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH # for dynamic libraries
 export C_INCLUDE_PATH=$C_INCLUDE_PATH
@@ -45,6 +46,11 @@ if ! ps -e | grep -q -E "gnome*|xfce4*"; then
       break
     fi
   done
+  # For some applications, even if you don't have any desktop environment installed,
+  # the XDG_CURRENT_DESKTOP variable must not be empty.
+  if [ -z "$XDG_CURRENT_DESKTOP" ]; then
+    export XDG_CURRENT_DESKTOP="XFCE"
+  fi
 fi
 
 
