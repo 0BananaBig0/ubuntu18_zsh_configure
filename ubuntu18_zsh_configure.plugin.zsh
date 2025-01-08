@@ -126,6 +126,9 @@ if grep -q WSL2 /proc/version; then
   export DISPLAY=:0
   # For wsl2 vscode
   export DONT_PROMPT_WSL_INSTALL=1
+  # Disable Wayland
+  export GDK_BACKEND=x11
+  unset WAYLAND_DISPLAY
 fi
 
 
