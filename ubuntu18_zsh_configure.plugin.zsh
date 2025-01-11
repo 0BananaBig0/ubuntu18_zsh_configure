@@ -99,7 +99,7 @@ if [ -s `which go` ]; then
   if [ ! -s "$HOME/.local/.go" ]; then
     mkdir $HOME/.local/.go -p
   fi
-  [[ -d "$HOME/.local/.go" && ":$GOPATH:" != *":$HOME/.local/.go:"* ]] && GOPATH="$HOME/.local/.go${GOPATH:+:${GOPATH}}"
+  [[ -d "$HOME/.local/.go" && ":$GOPATH:" != *":$HOME/.local/.go:"* ]] && export GOPATH="$HOME/.local/.go${GOPATH:+:${GOPATH}}"
   [[ -d "${GOPATH//://bin:}/bin" && ":$PATH:" != *":${GOPATH//://bin:}/bin:"* ]] && PATH="${GOPATH//://bin:}/bin:$PATH"
   export GO111MODULE=on
   # Set the GOPROXY environment variable
