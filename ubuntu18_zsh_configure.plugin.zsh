@@ -76,11 +76,6 @@ fi
 
 
 
-# Set gdb
-alias gdb='gdb -q'
-
-
-
 # Set CUDA
 if [ -d /usr/local/cuda ]; then
   [[ -d "/usr/local/cuda/bin" && ":$PATH:" != *":/usr/local/cuda/bin:"* ]] && PATH="/usr/local/cuda/bin:$PATH"
@@ -90,16 +85,20 @@ fi
 
 
 
-# Set vim , gvim and goneovim
+# Set vim , gvim, goneovim and gdb
 alias vi='vi -p'
 alias vim='vim -p'
 alias gvim='gvim -p'
 alias nvim='nvim -p'
+alias gdb='gdb -q'
 
 
 
 # Set Go language
-if [ -s "$HOME/.local/.go" ]; then
+if [ -s `which go` ]; then
+  if [ ! -s "$HOME/.local/.go" ]; then
+    mkdir $HOME/.local/.go -p
+  fi
   [[ -d "$HOME/.local/.go" && ":$GOPATH:" != *":$HOME/.local/.go:"* ]] && GOPATH="$HOME/.local/.go${GOPATH:+:${GOPATH}}"
   [[ -d "${GOPATH//://bin:}/bin" && ":$PATH:" != *":${GOPATH//://bin:}/bin:"* ]] && PATH="${GOPATH//://bin:}/bin:$PATH"
   export GO111MODULE=on
@@ -170,3 +169,5 @@ if [ -d $HOME/.local/share/gem/ruby ]; then
     [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
   done
 fi
+
+
