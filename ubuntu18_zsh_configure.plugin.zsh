@@ -95,7 +95,7 @@ alias gdb='gdb -q'
 
 
 # Set Go language
-if [ -s `which go` ]; then
+if command -v go > /dev/null 2>&1; then
   if [ ! -s "$HOME/.local/.go" ]; then
     mkdir $HOME/.local/.go -p
   fi
