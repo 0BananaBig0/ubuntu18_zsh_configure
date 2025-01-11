@@ -134,16 +134,16 @@ fi
 
 # Perl settings
 if command -v perl > /dev/null 2>&1; then
-  if [ ! -d $HOME/.local/.perl5 ]; then
-    mkdir $HOME/.local/.perl5 -p
+  if [ ! -d $HOME/.local/perl5 ]; then
+    mkdir $HOME/.local/perl5 -p
   fi
-  [[ -d "$HOME/.local/.perl5/bin" && ":$PATH:" != *":$HOME/.local/.perl5/bin:"* ]] && PATH="$HOME/.local/.perl5/bin:$PATH"
-  [[ -d "$HOME/.local/.perl5/lib" && ":$PERL5LIB:" != *":$HOME/.local/.perl5/lib:"* ]] && export PERL5LIB="$HOME/.local/.perl5/lib${PERL5LIB:+:${PERL5LIB}}"
-  [[ -d "$HOME/.local/.perl5/lib/perl5" && ":$PERL5LIB:" != *":$HOME/.local/.perl5/lib/perl5:"* ]] && export PERL5LIB="$HOME/.local/.perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"
-  [[ -d "$HOME/.local/.perl5" && ":$PERL_LOCAL_LIB_ROOT:" != *":$HOME/.local/.perl5:"* ]] && export PERL_LOCAL_LIB_ROOT="$HOME/.local/.perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"
-  PERL_MB_OPT="--install_base \"$HOME/.local/.perl5\""; export PERL_MB_OPT;
-  PERL_MM_OPT="INSTALL_BASE=$HOME/.local/.perl5"; export PERL_MM_OPT;
-  alias cpanm="cpanm --local-lib=$HOME/.local/.perl5"
+  [[ -d "$HOME/.local/perl5/bin" && ":$PATH:" != *":$HOME/.local/perl5/bin:"* ]] && PATH="$HOME/.local/perl5/bin:$PATH"
+  [[ -d "$HOME/.local/perl5/lib" && ":$PERL5LIB:" != *":$HOME/.local/perl5/lib:"* ]] && export PERL5LIB="$HOME/.local/perl5/lib${PERL5LIB:+:${PERL5LIB}}"
+  [[ -d "$HOME/.local/perl5/lib/perl5" && ":$PERL5LIB:" != *":$HOME/.local/perl5/lib/perl5:"* ]] && export PERL5LIB="$HOME/.local/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"
+  [[ -d "$HOME/.local/perl5" && ":$PERL_LOCAL_LIB_ROOT:" != *":$HOME/.local/perl5:"* ]] && export PERL_LOCAL_LIB_ROOT="$HOME/.local/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"
+  PERL_MB_OPT="--install_base \"$HOME/.local/perl5\""; export PERL_MB_OPT;
+  PERL_MM_OPT="INSTALL_BASE=$HOME/.local/perl5"; export PERL_MM_OPT;
+  alias cpanm="cpanm --local-lib=$HOME/.local/perl5"
 fi
 
 
