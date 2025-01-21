@@ -62,7 +62,7 @@ find_root_path() {
   local current_path="$PWD"
 
   # Step 2: Traverse up to the root
-  while [[ "$current_path" != "$HOME" ]]; do
+  while [[ "$current_path" != "$HOME" && "$current_path" != "/home/$SUDO_USER" && "$current_path" != "/" ]]; do
     for pattern in "${root_patterns[@]}"; do
       # Check if the pattern exists as a file or directory
       if [[ -e "$current_path/$pattern" ]]; then
