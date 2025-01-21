@@ -54,6 +54,110 @@ if ! ps -e | grep -q -E "gnome*|xfce4*"; then
 fi
 
 
+
+# Personal functions
+find_root_path() {
+  # Step 1: Define an array of root patterns
+  local root_patterns=(".git" ".hg" ".projections.json" ".project" ".svn" ".root" ".vscode" "SConstruct")
+  local current_path="$PWD"
+
+  # Step 2: Traverse up to the root
+  while [[ "$current_path" != "/" ]]; do
+    for pattern in "${root_patterns[@]}"; do
+      # Check if the pattern exists as a file or directory
+      if [[ -e "$current_path/$pattern" ]]; then
+        echo "$current_path"
+        return 0
+      fi
+    done
+    # Move to the parent directory
+    current_path=$(dirname "$current_path")
+  done
+
+  # Step 3: If no match, return the current path and echo a message
+  echo "$PWD"
+  echo "Warning: You had better create a root-pattern file like .git in your project." >&2
+  return 1
+}
+
+check_and_copy_file() {
+  local source_path="$HOME/.vim/.c_cpp"
+  local workspace_path="$1"
+  local file_name="$2"
+
+  # Check if the file exists in the current workspace
+  if [[ -e "$workspace_path/$file_name" ]]; then
+    echo "File $workspace_path/$file_name has existed."
+  elif [[ -e "$source_path/$file_name" ]]; then
+    # If the file exists in the specific path, copy it to the current workspace
+    cp "$source_path/$file_name" "$workspace_path/$file_name"
+  else
+    # If the file doesn't exist in either location
+    echo "Warning: File $source_path/$file_name and $workspace_path/$file_name file do not exist."
+    return 0
+  fi
+  return 1
+}
+
+configure() {
+  # Argument: $1 (could be clang, vscode, vimspector, dbg, all or "")
+  local action="$1"
+  local recursive="$2"
+  # Only created and assigned once, a global var
+  if [ -z "$workspace_path" ]; then
+    workspace_path=$(find_root_path)
+  fi
+
+  case "$action" in
+    clang)
+      check_and_copy_file $workspace_path ".clang-format"
+      check_and_copy_file $workspace_path ".clang-tidy"
+      if [[ $recursive -eq 1 ]]; then
+        return 1
+      fi
+      ;;
+    vscode)
+      if [[ ! -d "$workspace_path/.vscode" ]]; then
+        mkdir "$workspace_path/.vscode"
+      fi
+      check_and_copy_file $workspace_path ".vscode/launch.json"
+      if [[ $recursive -eq 1 ]]; then
+        return 1
+      fi
+      ;;
+    vimspector)
+      check_and_copy_file $workspace_path ".vimspector.json"
+      local result=$?
+      if [[ $result -eq 1 ]]; then
+        gvim "$workspace_path/.vimspector.json"
+      fi
+      if [[ $recursive -eq 1 ]]; then
+        return 1
+      fi
+      ;;
+    dbg)
+      configure vscode 1
+      configure vimspector 1
+      ;;
+    all)
+      configure clang 1
+      configure dbg 1
+      ;;
+    "")
+      configure clang 1
+      configure vimspector 1
+      ;;
+    *)
+      echo "Invalid argument: '$action'. Please specify clang, vscode, vimspector, dbg, all or \"\"."
+      return 0
+      ;;
+  esac
+  unset workspace_path
+  return 1
+}
+
+
+
 # Set ROS melodic
 if [ -x "/opt/ros/melodic/setup.zsh" ]; then
   source /opt/ros/melodic/setup.zsh
@@ -178,3 +282,5 @@ if [ -d $HOME/.local/share/gem/ruby ]; then
     [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
   done
 fi
+
+
