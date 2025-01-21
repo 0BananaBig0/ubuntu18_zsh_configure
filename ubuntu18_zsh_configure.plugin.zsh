@@ -174,6 +174,7 @@ if [ -d $HOME/.local/share/gem/ruby ]; then
   for dir in $HOME/.local/share/gem/ruby/*/gems/*/exe; do
     [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
   done
+  for dir in $HOME/.local/share/gem/ruby/*/bin; do
+    [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
+  done
 fi
-
-
