@@ -195,6 +195,8 @@ alias vim='vim -p'
 alias gvim='gvim -p'
 alias nvim='nvim -p'
 alias gdb='gdb -q'
+alias g++s='g++ -S -fverbose-asm'
+alias clang++s='clang++ -S -fverbose-asm'
 
 
 
@@ -282,5 +284,3 @@ if [ -d $HOME/.local/share/gem/ruby ]; then
     [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
   done
 fi
-
-
