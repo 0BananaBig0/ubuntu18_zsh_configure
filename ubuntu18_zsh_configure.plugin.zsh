@@ -196,7 +196,9 @@ alias gvim='gvim -p'
 alias nvim='nvim -p'
 alias gdb='gdb -q'
 alias g++s='g++ -S -fverbose-asm'
+alias gccs='gcc -S -fverbose-asm'
 alias clang++s='clang++ -S -fverbose-asm'
+alias clangs='clang -S -fverbose-asm'
 
 
 
