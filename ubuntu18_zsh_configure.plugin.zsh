@@ -110,6 +110,7 @@ configure() {
 
   case "$action" in
     clang)
+      check_and_copy_file $workspace_path ".clangd"
       check_and_copy_file $workspace_path ".clang-format"
       check_and_copy_file $workspace_path ".clang-tidy"
       if [[ $recursive -eq 1 ]]; then
