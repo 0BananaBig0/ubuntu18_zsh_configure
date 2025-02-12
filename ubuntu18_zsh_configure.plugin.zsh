@@ -237,7 +237,6 @@ if grep -q WSL2 /proc/version; then
   # Disable Wayland
   export GDK_BACKEND=x11
   unset WAYLAND_DISPLAY
-  export LIBGL_ALWAYS_SOFTWARE=1 # Prevent gui from crashing
 fi
 
 
