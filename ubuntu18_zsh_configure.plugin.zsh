@@ -265,8 +265,10 @@ if [ -d $HOME/.Qt6 ]; then
     [[ -d "$dir" && ":$PATH:" != *":$dir/bin:"* ]] && PATH="$dir/bin:$PATH"
     [[ -d "$dir" && ":$LIBRARY_PATH:" != *":$dir/lib:"* ]] && LIBRARY_PATH="$dir/lib:$LIBRARY_PATH"
     [[ -d "$dir" && ":$LD_LIBRARY_PATH:" != *":$dir/lib:"* ]] && LD_LIBRARY_PATH="$dir/lib:$LD_LIBRARY_PATH"
+    # Affect not only gcc default options but also g++ default options; Always -I all path listed in C_INCLUDE_PATH
     [[ -d "$dir" && ":$C_INCLUDE_PATH:" != *":$dir/include:"* ]] && C_INCLUDE_PATH="$dir/include${C_INCLUDE_PATH:+:${C_INCLUDE_PATH}}"
-    [[ -d "$dir" && ":$CPLUS_INCLUDE_PATH:" != *":$dir/include:"* ]] && CPLUS_INCLUDE_PATH="$dir/include${CPLUS_INCLUDE_PATH:+:${CPLUS_INCLUDE_PATH}}"
+    # Affect g++ default options; Always -I all path listed in CPLUS_INCLUDE_PATH
+    # [[ -d "$dir" && ":$CPLUS_INCLUDE_PATH:" != *":$dir/include:"* ]] && CPLUS_INCLUDE_PATH="$dir/include${CPLUS_INCLUDE_PATH:+:${CPLUS_INCLUDE_PATH}}"
     [[ -d "$dir" && ":$CMAKE_PREFIX_PATH:" != *":$dir/lib/cmake:"* ]] && CMAKE_PREFIX_PATH="$dir/lib/cmake${CMAKE_PREFIX_PATH:+:${CMAKE_PREFIX_PATH}}"
   done
   # for dir in $Qt6_DIR/*/gcc_64/include/*; do
