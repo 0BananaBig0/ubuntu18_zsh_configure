@@ -6,6 +6,8 @@ export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH
 export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH
 export XDG_DATA_DIRS=$XDG_DATA_DIRS # for showing icons
 export XDG_CURRENT_DESKTOP=$XDG_CURRENT_DESKTOP # for showing icons
+# Prevent exe files from appearing in auto-completion
+FIGNORE=".exe"
 
 
 
