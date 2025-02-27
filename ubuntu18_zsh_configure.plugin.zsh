@@ -1,6 +1,6 @@
 # Initialize some envs
-export LIBRARY_PATH=$LIBRARY_PATH # for static libraries
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH # for dynamic libraries
+export LIBRARY_PATH=$LIBRARY_PATH # for compile-time linking, including static libraries and dynamic libraries
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH # for load-time linking, merely including dynamic libraries
 export C_INCLUDE_PATH=$C_INCLUDE_PATH
 export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH
 export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH
