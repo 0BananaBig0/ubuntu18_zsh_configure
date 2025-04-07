@@ -308,4 +308,7 @@ if [ -d $HOME/tessent_2023 ]; then
   export LM_LICENSE_FILE=$Mentor_Dir/tessent2023_lic/license/license.dat
   [[ -d "$Mentor_Dir/tessent/bin" && ":$PATH:" != *":$Mentor_Dir/tessent/bin:"* ]] && PATH="$Mentor_Dir/tessent/bin:$PATH"
   [[ -d "$Mentor_Dir/questasim/bin" && ":$PATH:" != *":$Mentor_Dir/questasim/bin:"* ]] && PATH="$Mentor_Dir/questasim/bin:$PATH"
+  if [[ -f /etc/os-release ]] && grep -q "openSUSE" /etc/os-release; then
+    export QT_XCB_GL_INTEGRATION=none
+  fi
 fi
