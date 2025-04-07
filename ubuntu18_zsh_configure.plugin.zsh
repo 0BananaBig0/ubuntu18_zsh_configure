@@ -305,5 +305,7 @@ if [ -d $HOME/tessent_2023 ]; then
   export Mentor_Dir=$HOME/tessent_2023
   export MGLS_LICENSE_FILE=$Mentor_Dir/tessent2023_lic/license/license.dat
   export MGC_LICENSE_FILE=$Mentor_Dir/tessent2023_lic/license/license.dat
+  export LM_LICENSE_FILE=$Mentor_Dir/tessent2023_lic/license/license.dat
   [[ -d "$Mentor_Dir/tessent/bin" && ":$PATH:" != *":$Mentor_Dir/tessent/bin:"* ]] && PATH="$Mentor_Dir/tessent/bin:$PATH"
+  [[ -d "$Mentor_Dir/questasim/bin" && ":$PATH:" != *":$Mentor_Dir/questasim/bin:"* ]] && PATH="$Mentor_Dir/questasim/bin:$PATH"
 fi
