@@ -297,3 +297,13 @@ if [ -d $HOME/.local/share/gem/ruby ]; then
     [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
   done
 fi
+
+
+
+# tessent settings
+if [ -d $HOME/tessent_2023 ]; then
+  export Mentor_Dir=$HOME/tessent_2023
+  export MGLS_LICENSE_FILE=$Mentor_Dir/tessent2023_lic/license/license.dat
+  export MGC_LICENSE_FILE=$Mentor_Dir/tessent2023_lic/license/license.dat
+  [[ -d "$Mentor_Dir/tessent/bin" && ":$PATH:" != *":$Mentor_Dir/tessent/bin:"* ]] && PATH="$Mentor_Dir/tessent/bin:$PATH"
+fi
