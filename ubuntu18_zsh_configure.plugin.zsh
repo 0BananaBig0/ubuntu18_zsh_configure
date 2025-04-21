@@ -303,11 +303,13 @@ fi
 # tessent settings
 if [ -d $HOME/tessent_2023 ]; then
   export Mentor_Dir=$HOME/tessent_2023
-  export MGLS_LICENSE_FILE=$Mentor_Dir/tessent2023_lic/license/license.dat
-  export MGC_LICENSE_FILE=$Mentor_Dir/tessent2023_lic/license/license.dat
-  export LM_LICENSE_FILE=$Mentor_Dir/tessent2023_lic/license/license.dat
-  [[ -d "$Mentor_Dir/tessent/bin" && ":$PATH:" != *":$Mentor_Dir/tessent/bin:"* ]] && PATH="$Mentor_Dir/tessent/bin:$PATH"
-  [[ -d "$Mentor_Dir/questasim/bin" && ":$PATH:" != *":$Mentor_Dir/questasim/bin:"* ]] && PATH="$Mentor_Dir/questasim/bin:$PATH"
+  export MGLS_LICENSE_FILE=$Mentor_Dir/license/license.dat
+  export MGC_LICENSE_FILE=$Mentor_Dir/license/license.dat
+  export LM_LICENSE_FILE=$Mentor_Dir/license/license.dat
+  setopt extended_glob  # Enable Zsh extended globbing
+  for dir in $Mentor_Dir/^(*[0-9]*)/bin; do
+    [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
+  done
   if [[ -f /etc/os-release ]] && grep -q "openSUSE" /etc/os-release; then
     export QT_XCB_GL_INTEGRATION=none
   fi
