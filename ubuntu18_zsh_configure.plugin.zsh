@@ -306,6 +306,7 @@ if [ -d $HOME/tessent_2023 ]; then
   export MGLS_LICENSE_FILE=$Mentor_Dir/license/license.dat
   export MGC_LICENSE_FILE=$Mentor_Dir/license/license.dat
   export LM_LICENSE_FILE=$Mentor_Dir/license/license.dat
+  export MGC_HOME=$Mentor_Dir/calibre
   setopt extended_glob  # Enable Zsh extended globbing
   for dir in $Mentor_Dir/^(*[0-9]*)/bin; do
     [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
