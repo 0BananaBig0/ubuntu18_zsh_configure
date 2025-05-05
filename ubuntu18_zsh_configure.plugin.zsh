@@ -301,12 +301,14 @@ fi
 
 
 # tessent settings
-if [ -d $HOME/tessent_2023 ]; then
+if [[ -d $HOME/tessent_2023 ]]; then
   export Mentor_Dir=$HOME/tessent_2023
   export MGLS_LICENSE_FILE=$Mentor_Dir/license/license.dat
   export MGC_LICENSE_FILE=$Mentor_Dir/license/license.dat
   export LM_LICENSE_FILE=$Mentor_Dir/license/license.dat
-  export MGC_HOME=$Mentor_Dir/calibre
+  if [[ -d $HOME/tessent_2023 ]]; then
+    export MGC_HOME=$Mentor_Dir/calibre
+  fi
   setopt extended_glob  # Enable Zsh extended globbing
   for dir in $Mentor_Dir/^(*[0-9]*)/bin; do
     [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
