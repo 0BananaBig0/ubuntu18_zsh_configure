@@ -306,8 +306,24 @@ if [[ -d $HOME/tessent_2023 ]]; then
   export MGLS_LICENSE_FILE=$Mentor_Dir/license/license.dat
   export MGC_LICENSE_FILE=$Mentor_Dir/license/license.dat
   export LM_LICENSE_FILE=$Mentor_Dir/license/license.dat
-  if [[ -d $HOME/tessent_2023 ]]; then
-    export MGC_HOME=$Mentor_Dir/calibre
+  if [[ -d $Mentor_Dir/calibre ]]; then
+    export CALIBRE_HOME=$Mentor_Dir/calibre
+  fi
+  setopt extended_glob  # Enable Zsh extended globbing
+  for dir in $Mentor_Dir/^(*[0-9]*)/bin; do
+    [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
+  done
+  if [[ -f /etc/os-release ]] && grep -q "openSUSE" /etc/os-release; then
+    export QT_XCB_GL_INTEGRATION=none
+  fi
+fi
+if [[ -d /EDA/Mentor ]]; then
+  export Mentor_Dir=/EDA/Mentor
+  export MGLS_LICENSE_FILE=$Mentor_Dir/license/license.dat
+  export MGC_LICENSE_FILE=$Mentor_Dir/license/license.dat
+  export LM_LICENSE_FILE=$Mentor_Dir/license/license.dat
+  if [[ -d $Mentor_Dir/calibre ]]; then
+    export CALIBRE_HOME=$Mentor_Dir/calibre
   fi
   setopt extended_glob  # Enable Zsh extended globbing
   for dir in $Mentor_Dir/^(*[0-9]*)/bin; do
