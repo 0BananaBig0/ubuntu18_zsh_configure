@@ -8,6 +8,7 @@ export XDG_DATA_DIRS=$XDG_DATA_DIRS # for showing icons
 export XDG_CURRENT_DESKTOP=$XDG_CURRENT_DESKTOP # for showing icons
 # Prevent exe files from appearing in auto-completion
 FIGNORE=".exe"
+setopt extended_glob  # Enable Zsh extended globbing
 
 
 
@@ -278,6 +279,9 @@ if [ -d $HOME/.Qt6 ]; then
   #   [[ -d "$dir" && ":$CPLUS_INCLUDE_PATH:" != *":$dir:"* ]] && CPLUS_INCLUDE_PATH="$dir:$CPLUS_INCLUDE_PATH"
   # done
   export QT_QPA_PLATFORM=xcb # Not use wayland
+  if [[ -f /etc/os-release ]] && grep -q "openSUSE" /etc/os-release; then
+    export QT_XCB_GL_INTEGRATION=none
+  fi
 fi
 
 
@@ -300,7 +304,7 @@ fi
 
 
 
-# tessent settings
+# Mentor  settings
 if [[ -d $HOME/tessent_2023 ]]; then
   export Mentor_Dir=$HOME/tessent_2023
   export MGLS_LICENSE_FILE=$Mentor_Dir/license/license.dat
@@ -313,9 +317,6 @@ if [[ -d $HOME/tessent_2023 ]]; then
   for dir in $Mentor_Dir/^(*[0-9]*)/bin; do
     [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
   done
-  if [[ -f /etc/os-release ]] && grep -q "openSUSE" /etc/os-release; then
-    export QT_XCB_GL_INTEGRATION=none
-  fi
 fi
 if [[ -d /EDA/Mentor ]]; then
   export Mentor_Dir=/EDA/Mentor
@@ -325,11 +326,23 @@ if [[ -d /EDA/Mentor ]]; then
   if [[ -d $Mentor_Dir/calibre ]]; then
     export CALIBRE_HOME=$Mentor_Dir/calibre
   fi
-  setopt extended_glob  # Enable Zsh extended globbing
   for dir in $Mentor_Dir/^(*[0-9]*)/bin; do
     [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
   done
-  if [[ -f /etc/os-release ]] && grep -q "openSUSE" /etc/os-release; then
-    export QT_XCB_GL_INTEGRATION=none
+fi
+
+
+
+# Synopsys settings
+if [[ -d /EDA/Synopsys ]]; then
+  export Synopsys_Dir=/EDA/Synopsys
+  export SNPSLMV_LICENSE_FILE=27000@banana
+  export LM_LICENSE_FILE=27000@banana
+  export VCS_ARCH_OVERRIDE=linux
+  if [[ -d $Synopsys_Dir/vcs ]]; then
+    export VCS_HOME=$Synopsys_Dir/vcs
   fi
+  for dir in $Synopsys_Dir/^(*[0-9]*)/bin; do
+    [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
+  done
 fi
