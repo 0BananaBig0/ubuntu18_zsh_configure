@@ -305,6 +305,9 @@ fi
 
 
 # Mentor  settings
+if [[ -d /EDA/library ]]; then
+  export LD_LIBRARY_PATH=/EDA/library/lib:$LD_LIBRARY_PATH
+fi
 if [[ -d $HOME/tessent_2023 ]]; then
   export Mentor_Dir=$HOME/tessent_2023
   export MGLS_LICENSE_FILE=$Mentor_Dir/license/license.dat
@@ -338,11 +341,21 @@ if [[ -d /EDA/Synopsys ]]; then
   export Synopsys_Dir=/EDA/Synopsys
   export SNPSLMV_LICENSE_FILE=27000@banana
   export LM_LICENSE_FILE=27000@banana
-  export VCS_ARCH_OVERRIDE=linux
-  if [[ -d $Synopsys_Dir/vcs ]]; then
-    export VCS_HOME=$Synopsys_Dir/vcs
+  export SNPSLMD_LICENSE_FILE=$Synopsys_Dir/license/Synopsys.dat
+  export LM_LICENSE_FILE=$SNPSLMD_LICENSE_FILE
+  if [[ -d $Synopsys_Dir/vcs/vcs ]]; then
+    export VCS_HOME=$Synopsys_Dir/vcs/vcs
+    export VCS_ARCH_OVERRIDE=linux
+    export VCS_TARGET_ARCH="amd64"
+    alias vcs64="vcs -full64"
   fi
-  for dir in $Synopsys_Dir/^(*[0-9]*)/bin; do
+  if [[ -d $Synopsys_Dir/verdi/verdi ]]; then
+    export VERDI_HOME=$Synopsys_Dir/verdi/verdi
+    export LD_LIBRARY_PATH=$VERDI_HOME/share/PLI/lib/LINUX64:$LD_LIBRARY_PATH
+    export VERDI_DIR=$VERDI_HOME
+    alias verdi="verdi -full64 &"
+  fi
+  for dir in $Synopsys_Dir/^(*[0-9]*)/^(*[0-9]*)/bin; do
     [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
   done
 fi
