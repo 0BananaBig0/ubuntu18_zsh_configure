@@ -286,24 +286,6 @@ fi
 
 
 
-# Ruby settings
-if [ -d $HOME/.local/share/gem/ruby ]; then
-  for dir in $HOME/.local/share/gem/ruby/*/gems/*/exe; do
-    [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
-  done
-  for dir in $HOME/.local/share/gem/ruby/*/bin; do
-    [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
-  done
-  for dir in $HOME/.local/share/gem/ruby/gems/*/exe; do
-    [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
-  done
-  for dir in $HOME/.local/share/gem/ruby/bin; do
-    [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
-  done
-fi
-
-
-
 # Mentor  settings
 if [[ -d /EDA/library ]]; then
   export LD_LIBRARY_PATH=/EDA/library/lib:$LD_LIBRARY_PATH
@@ -359,3 +341,13 @@ if [[ -d /EDA/Synopsys ]]; then
     [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
   done
 fi
+
+
+
+# Alias pip3
+for dir in $HOME/.local/lib/python3*/site-packages; do
+  if [[ -d $dir/pip ]]; then
+    alias pip='python3 -m pip'
+    alias pip3='python3 -m pip'
+  fi
+done
