@@ -19,7 +19,7 @@ MODE_INDICATOR="%F{white}<<<%f"
 
 
 # Add env
-[[ -d "/usr/local/bin" && ":$PATH:" != *":/usr/local/bin:"* ]] && PATH="PATH:/usr/local/bin"
+[[ -d "/usr/local/bin" && ":$PATH:" != *":/usr/local/bin:"* ]] && PATH="$PATH:/usr/local/bin"
 [[ -d "/usr/lib" && ":$LD_LIBRARY_PATH:" != *":/usr/lib:"* ]] && LD_LIBRARY_PATH="/usr/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
 [[ -d "/usr/local/lib" && ":$LD_LIBRARY_PATH:" != *":/usr/local/lib:"* ]] && LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
 [[ -d "/usr/lib" && ":$LIBRARY_PATH:" != *":/usr/lib:"* ]] && LIBRARY_PATH="/usr/lib${LIBRARY_PATH:+:${LIBRARY_PATH}}"
