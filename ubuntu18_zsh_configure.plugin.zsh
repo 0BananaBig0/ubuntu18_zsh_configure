@@ -19,6 +19,7 @@ MODE_INDICATOR="%F{white}<<<%f"
 
 
 # Add env
+[[ -d "/usr/local/bin" && ":$PATH:" != *":/usr/local/bin:"* ]] && PATH="PATH:/usr/local/bin"
 [[ -d "/usr/lib" && ":$LD_LIBRARY_PATH:" != *":/usr/lib:"* ]] && LD_LIBRARY_PATH="/usr/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
 [[ -d "/usr/local/lib" && ":$LD_LIBRARY_PATH:" != *":/usr/local/lib:"* ]] && LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
 [[ -d "/usr/lib" && ":$LIBRARY_PATH:" != *":/usr/lib:"* ]] && LIBRARY_PATH="/usr/lib${LIBRARY_PATH:+:${LIBRARY_PATH}}"
@@ -321,8 +322,8 @@ fi
 # Synopsys settings
 if [[ -d /EDA/Synopsys ]]; then
   export Synopsys_Dir=/EDA/Synopsys
-  export SNPSLMV_LICENSE_FILE=27000@banana
-  export LM_LICENSE_FILE=27000@banana
+  export SNPSLMV_LICENSE_FILE=27000@Banana
+  export LM_LICENSE_FILE=27000@Banana
   export SNPSLMD_LICENSE_FILE=$Synopsys_Dir/license/Synopsys.dat
   export LM_LICENSE_FILE=$SNPSLMD_LICENSE_FILE
   if [[ -d $Synopsys_Dir/vcs/vcs ]]; then
