@@ -257,6 +257,7 @@ if command -v perl > /dev/null 2>&1; then
   PERL_MB_OPT="--install_base \"$HOME/.local/perl5\""; export PERL_MB_OPT;
   PERL_MM_OPT="INSTALL_BASE=$HOME/.local/perl5"; export PERL_MM_OPT;
   alias cpanm="cpanm --local-lib=$HOME/.local/perl5"
+  alias pldb="perl -Mdiagnostics"
 fi
 
 
@@ -337,6 +338,10 @@ if [[ -d /EDA/Synopsys ]]; then
     export LD_LIBRARY_PATH=$VERDI_HOME/share/PLI/lib/LINUX64:$LD_LIBRARY_PATH
     export VERDI_DIR=$VERDI_HOME
     alias verdi="verdi -full64 &"
+  fi
+  if [[ -d $Synopsys_Dir/scl/scl ]]; then
+    export SCL_HOME=$Synopsys_Dir/scl/scl
+    alias load_syn="$SCL_HOME/linux64/bin/lmgrd -c $SNPSLMD_LICENSE_FILE"
   fi
   for dir in $Synopsys_Dir/^(*[0-9]*)/^(*[0-9]*)/bin; do
     [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
