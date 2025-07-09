@@ -12,6 +12,15 @@ setopt extended_glob  # Enable Zsh extended globbing
 
 
 
+# Congifure git
+export GIT_AUTHOR_NAME="Huaxiao Liang"
+export GIT_AUTHOR_EMAIL="1184903633@qq.com"
+export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
+export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
+export GIT_EDITOR="gvim"
+
+
+
 # Set vi-mode of terminal
 VI_MODE_RESET_PROMPT_ON_MODE_CHANGE=true
 MODE_INDICATOR="%F{white}<<<%f"
