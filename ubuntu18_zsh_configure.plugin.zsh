@@ -18,7 +18,6 @@ export GIT_AUTHOR_EMAIL="hxliang666@qq.com"
 export GIT_COMMITTER_NAME="$GIT_AUTHOR_NAME"
 export GIT_COMMITTER_EMAIL="$GIT_AUTHOR_EMAIL"
 export GIT_EDITOR="gvim"
-export GIT_EXTERNAL_DIFF='gvimdiff'
 
 
 
