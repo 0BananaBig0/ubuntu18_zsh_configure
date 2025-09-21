@@ -301,19 +301,6 @@ fi
 if [[ -d /EDA/library ]]; then
   export LD_LIBRARY_PATH=/EDA/library/lib:$LD_LIBRARY_PATH
 fi
-if [[ -d $HOME/tessent_2023 ]]; then
-  export Mentor_Dir=$HOME/tessent_2023
-  export MGLS_LICENSE_FILE=$Mentor_Dir/license/license.dat
-  export MGC_LICENSE_FILE=$Mentor_Dir/license/license.dat
-  export LM_LICENSE_FILE=$Mentor_Dir/license/license.dat
-  if [[ -d $Mentor_Dir/calibre ]]; then
-    export CALIBRE_HOME=$Mentor_Dir/calibre
-  fi
-  setopt extended_glob  # Enable Zsh extended globbing
-  for dir in $Mentor_Dir/^(*[0-9]*)/bin; do
-    [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
-  done
-fi
 if [[ -d /EDA/Mentor ]]; then
   export Mentor_Dir=/EDA/Mentor
   export MGLS_LICENSE_FILE=$Mentor_Dir/license/license.dat
@@ -322,6 +309,16 @@ if [[ -d /EDA/Mentor ]]; then
   if [[ -d $Mentor_Dir/calibre ]]; then
     export CALIBRE_HOME=$Mentor_Dir/calibre
   fi
+  if [[ -d $Mentor_Dir/questasim ]]; then
+    export QUESTA_HOME=/EDA/Mentor/questasim
+  fi
+  if [[ -d $Mentor_Dir/tessent ]]; then
+    export TESSENT_HOME=/EDA/Mentor/tessent
+  fi
+  if [[ -d $Mentor_Dir/oasys ]]; then
+    export OASYS_HOME=/EDA/Mentor/tessent
+  fi
+  setopt extended_glob  # Enable Zsh extended globbing
   for dir in $Mentor_Dir/^(*[0-9]*)/bin; do
     [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
   done
