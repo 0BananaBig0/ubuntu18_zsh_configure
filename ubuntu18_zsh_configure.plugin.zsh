@@ -347,7 +347,7 @@ if [[ -d /EDA/Synopsys ]]; then
   fi
   if [[ -d $Synopsys_Dir/scl/scl ]]; then
     export SCL_HOME=$Synopsys_Dir/scl/scl
-    alias load_syn="$SCL_HOME/linux64/bin/lmgrd -c $SNPSLMD_LICENSE_FILE"
+    alias load_syn="$SCL_HOME/linux64/bin/lmgrd -c $SNPSLMD_LICENSE_FILE -l /tmp/syn.debug.log"
   fi
   for dir in $Synopsys_Dir/^(*[0-9]*)/^(*[0-9]*)/bin; do
     [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
@@ -363,3 +363,12 @@ for dir in $HOME/.local/lib/python3*/site-packages; do
     alias pip3='python3 -m pip'
   fi
 done
+
+# Ruby and rbenv configuration
+if command -v rbenv > /dev/null 2>&1; then
+  if [ ! -s "$HOME/.rbenv/bin" ]; then
+    mkdir $HOME/.rbenv/bin -p
+  fi
+  export PATH="$HOME/.rbenv/bin:$PATH"
+  eval "$(rbenv init - zsh)"
+fi
