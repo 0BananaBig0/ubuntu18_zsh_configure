@@ -415,8 +415,20 @@ if [ -d "${BOSIOS}" ]; then
     fi
 
     # Configure python3 pip install
-    [[ -d "/data/bosios/python/lib64/python3.12/site-packages" && ":$PYTHONPATH:" != *":/data/bosios/python/lib64/python3.12/site-packages:"* ]] && PYTHONPATH="/data/bosios/python/lib64/python3.12/site-packages:$PYTHONPATH"
-    [[ -d "/data/bosios/python/lib/python3.12/site-packages" && ":$PYTHONPATH:" != *":/data/bosios/python/lib/python3.12/site-packages:"* ]] && PYTHONPATH="/data/bosios/python/lib/python3.12/site-packages:$PYTHONPATH"
+    if [[ -d "/data/bosios/python/lib64/python3.12/site-packages" ]]; then
+        if [[ -z "$PYTHONPATH" ]]; then
+            PYTHONPATH="/data/bosios/python/lib64/python3.12/site-packages"
+        elif [[ ":$PYTHONPATH:" != *":/data/bosios/python/lib64/python3.12/site-packages:"* ]]; then
+            PYTHONPATH="/data/bosios/python/lib64/python3.12/site-packages:$PYTHONPATH"
+        fi
+    fi
+    if [[ -d "/data/bosios/python/lib/python3.12/site-packages" ]]; then
+        if [[ -z "$PYTHONPATH" ]]; then
+            PYTHONPATH="/data/bosios/python/lib/python3.12/site-packages"
+        elif [[ ":$PYTHONPATH:" != *":/data/bosios/python/lib/python3.12/site-packages:"* ]]; then
+            PYTHONPATH="/data/bosios/python/lib/python3.12/site-packages:$PYTHONPATH"
+        fi
+    fi
     alias python3='python3.12'
     alias pip='python3.12 -m pip'
     alias pip3='python3.12 -m pip'
