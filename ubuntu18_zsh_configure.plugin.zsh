@@ -227,9 +227,8 @@ if command -v go > /dev/null 2>&1; then
   [[ -d "${GOPATH//://bin:}/bin" && ":$PATH:" != *":${GOPATH//://bin:}/bin:"* ]] && PATH="${GOPATH//://bin:}/bin:$PATH"
   export GO111MODULE=on
   # Set the GOPROXY environment variable
-  export GOPROXY=https://goproxy.io,direct
-  # Set environment variable allow bypassing the proxy for specified repos (optional)
-  # export GOPRIVATE=git.mycompany.com,github.com/my/private
+  export GOPROXY=https://goproxy.cn,direct
+  export GOSUMDB=sum.golang.google.cn
 fi
 
 
