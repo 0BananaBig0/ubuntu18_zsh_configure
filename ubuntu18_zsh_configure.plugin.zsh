@@ -376,3 +376,52 @@ if command -v rbenv > /dev/null 2>&1; then
   export PATH="$HOME/.rbenv/bin:$PATH"
   eval "$(rbenv init - zsh)"
 fi
+
+# Set env for eda-rocky8
+BOSIOS="${BOSIOS}"
+if [ -s "${BOSIOS}" ]; then
+    # Configure nvm and nodejs
+    if [ -s "${BOSIOS}/nvm" ]; then
+        export NVM_DIR="${BOSIOS}/nvm"
+        [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+        [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+        # 获取所有版本目录，按版本号排序，取最新的
+        LATEST_VERSION=$(ls -d ${BOSIOS}/nvm/versions/node/*/ | sort -V | tail -1 | xargs basename)
+        NODE_PATH="${BOSIOS}/nvm/versions/node/${LATEST_VERSION}"
+        if [ -n "$LATEST_VERSION" ]; then
+            NODE_PATH="${NVM_DIR}/${LATEST_VERSION}"
+            # 生成环境变量配置
+            # Node.js 环境变量配置 (自动检测最新版本: $LATEST_VERSION)
+            [[ -d "${NODE_PATH}/bin" && ":$PATH:" != *":${NODE_PATH}/bin:"* ]] && PATH="${NODE_PATH}/bin:$PATH"
+            [[ -d "${NODE_PATH}/lib" && ":$LD_LIBRARY_PATH:" != *":${NODE_PATH}/lib:"* ]] && LD_LIBRARY_PATH="${NODE_PATH}/lib:$LD_LIBRARY_PATH"
+            [[ -d "${NODE_PATH}/lib" && ":$LIBRARY_PATH:" != *":${NODE_PATH}/lib:"* ]] && LIBRARY_PATH="${NODE_PATH}/lib:$LIBRARY_PATH"
+            [[ -d "${NODE_PATH}/share" && ":$XDG_DATA_DIRS:" != *":${NODE_PATH}/share:"* ]] && XDG_DATA_DIRS="${NODE_PATH}/share:$XDG_DATA_DIRS"
+        fi
+    fi
+    for os_item in ${BOSIOS}/*; do
+        OS_PATH="${BOSIOS}/${os_item}"
+        [[ -d "${OS_PATH}/bin" && ":$PATH:" != *":${OS_PATH}/bin:"* ]] && PATH="${OS_PATH}/bin:"
+        [[ -d "${OS_PATH}/lib" && ":$LD_LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LD_LIBRARY_PATH="${OS_PATH}/lib:$LD_LIBRARY_PATH"
+        [[ -d "${OS_PATH}/lib" && ":$LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LIBRARY_PATH="${OS_PATH}/lib:$LIBRARY_PATH"
+        [[ -d "${OS_PATH}/share" && ":$XDG_DATA_DIRS:" != *":${OS_PATH}/share:"* ]] && XDG_DATA_DIRS="${OS_PATH}/share:$XDG_DATA_DIRS"
+    done
+    if [ -s "${BOSIOS}/node_modules" ]; then
+        for os_item in ${BOSIOS}/node_modules/*; do
+            OS_PATH="${BOSIOS}/${os_item}"
+            [[ -d "${OS_PATH}/bin" && ":$PATH:" != *":${OS_PATH}/bin:"* ]] && PATH="${OS_PATH}/bin:$PATH"
+            [[ -d "${OS_PATH}/lib" && ":$LD_LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LD_LIBRARY_PATH="${OS_PATH}/lib:$LD_LIBRARY_PATH"
+            [[ -d "${OS_PATH}/lib" && ":$LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LIBRARY_PATH="${OS_PATH}/lib:$LIBRARY_PATH"
+            [[ -d "${OS_PATH}/share" && ":$XDG_DATA_DIRS:" != *":${OS_PATH}/share:"* ]] && XDG_DATA_DIRS="${OS_PATH}/share:$XDG_DATA_DIRS"
+        done
+    fi
+
+    # Configure python3 pip install
+    OS_PATH="${BOSIOS}/python/site-packages"
+    [[ -d "${OS_PATH}/bin" && ":$PATH:" != *":${OS_PATH}/bin:"* ]] && PATH="${OS_PATH}/bin:$PATH"
+    [[ -d "${OS_PATH}/lib" && ":$LD_LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LD_LIBRARY_PATH="${OS_PATH}/lib:$LD_LIBRARY_PATH"
+    [[ -d "${OS_PATH}/lib" && ":$LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LIBRARY_PATH="${OS_PATH}/lib:$LIBRARY_PATH"
+    [[ -d "${OS_PATH}/share" && ":$XDG_DATA_DIRS:" != *":${OS_PATH}/share:"* ]] && XDG_DATA_DIRS="${OS_PATH}/share:$XDG_DATA_DIRS"
+    alias python3='python3.12'
+    alias pip='python3.12 -m pip'
+    alias pip3='python3.12 -m pip'
+fi
