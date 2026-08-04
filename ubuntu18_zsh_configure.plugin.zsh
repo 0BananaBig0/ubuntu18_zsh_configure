@@ -398,16 +398,14 @@ if [ -d "${BOSIOS}" ]; then
             [[ -d "${NODE_PATH}/share" && ":$XDG_DATA_DIRS:" != *":${NODE_PATH}/share:"* ]] && XDG_DATA_DIRS="${NODE_PATH}/share:$XDG_DATA_DIRS"
         fi
     fi
-    for os_item in ${BOSIOS}/*; do
-        OS_PATH="${BOSIOS}/${os_item}"
+    for OS_PATH in ${BOSIOS}/*; do
         [[ -d "${OS_PATH}/bin" && ":$PATH:" != *":${OS_PATH}/bin:"* ]] && PATH="${OS_PATH}/bin:"
         [[ -d "${OS_PATH}/lib" && ":$LD_LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LD_LIBRARY_PATH="${OS_PATH}/lib:$LD_LIBRARY_PATH"
         [[ -d "${OS_PATH}/lib" && ":$LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LIBRARY_PATH="${OS_PATH}/lib:$LIBRARY_PATH"
         [[ -d "${OS_PATH}/share" && ":$XDG_DATA_DIRS:" != *":${OS_PATH}/share:"* ]] && XDG_DATA_DIRS="${OS_PATH}/share:$XDG_DATA_DIRS"
     done
     if [ -s "${BOSIOS}/node_modules" ]; then
-        for os_item in ${BOSIOS}/node_modules/*; do
-            OS_PATH="${BOSIOS}/${os_item}"
+        for OS_PATH in ${BOSIOS}/node_modules/*; do
             [[ -d "${OS_PATH}/bin" && ":$PATH:" != *":${OS_PATH}/bin:"* ]] && PATH="${OS_PATH}/bin:$PATH"
             [[ -d "${OS_PATH}/lib" && ":$LD_LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LD_LIBRARY_PATH="${OS_PATH}/lib:$LD_LIBRARY_PATH"
             [[ -d "${OS_PATH}/lib" && ":$LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LIBRARY_PATH="${OS_PATH}/lib:$LIBRARY_PATH"
