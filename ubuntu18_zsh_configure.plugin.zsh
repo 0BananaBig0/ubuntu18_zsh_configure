@@ -405,7 +405,7 @@ if [ -d "${BOSIOS}" ]; then
         [[ -d "${OS_PATH}/lib" && ":$LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LIBRARY_PATH="${OS_PATH}/lib:$LIBRARY_PATH"
         [[ -d "${OS_PATH}/share" && ":$XDG_DATA_DIRS:" != *":${OS_PATH}/share:"* ]] && XDG_DATA_DIRS="${OS_PATH}/share:$XDG_DATA_DIRS"
     done
-    if [ -s "${BOSIOS}/node_modules" ]; then
+    if [ -d "${BOSIOS}/node_modules" ]; then
         for OS_PATH in ${BOSIOS}/node_modules/*; do
             [[ -d "${OS_PATH}/bin" && ":$PATH:" != *":${OS_PATH}/bin:"* ]] && PATH="${OS_PATH}/bin:$PATH"
             [[ -d "${OS_PATH}/lib" && ":$LD_LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LD_LIBRARY_PATH="${OS_PATH}/lib:$LD_LIBRARY_PATH"
@@ -432,5 +432,9 @@ if [ -d "${BOSIOS}" ]; then
     alias python3='python3.12'
     alias pip='python3.12 -m pip'
     alias pip3='python3.12 -m pip'
-    source /data/eda/bashrc/bashrc.eda
+
+    # Configure eda
+    if [[ -d "/data/eda/bashrc/bashrc.eda" ]]; then
+        source /data/eda/bashrc/bashrc.eda
+    fi
 fi
