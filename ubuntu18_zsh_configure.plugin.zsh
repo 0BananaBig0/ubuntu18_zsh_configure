@@ -378,10 +378,10 @@ if command -v rbenv > /dev/null 2>&1; then
 fi
 
 # Set env for eda-rocky8
-BOSIOS="${BOSIOS}"
-if [ -s "${BOSIOS}" ]; then
+BOSIOS="/data/bosios"
+if [ -d "${BOSIOS}" ]; then
     # Configure nvm and nodejs
-    if [ -s "${BOSIOS}/nvm" ]; then
+    if [ -d "${BOSIOS}/nvm" ]; then
         export NVM_DIR="${BOSIOS}/nvm"
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
         [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
