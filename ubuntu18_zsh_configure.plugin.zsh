@@ -399,7 +399,7 @@ if [ -d "${BOSIOS}" ]; then
         fi
     fi
     for OS_PATH in ${BOSIOS}/*; do
-        [[ -d "${OS_PATH}/bin" && ":$PATH:" != *":${OS_PATH}/bin:"* ]] && PATH="${OS_PATH}/bin:"
+        [[ -d "${OS_PATH}/bin" && ":$PATH:" != *":${OS_PATH}/bin:"* ]] && PATH="${OS_PATH}/bin:$PATH"
         [[ -d "${OS_PATH}/lib" && ":$LD_LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LD_LIBRARY_PATH="${OS_PATH}/lib:$LD_LIBRARY_PATH"
         [[ -d "${OS_PATH}/lib" && ":$LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LIBRARY_PATH="${OS_PATH}/lib:$LIBRARY_PATH"
         [[ -d "${OS_PATH}/share" && ":$XDG_DATA_DIRS:" != *":${OS_PATH}/share:"* ]] && XDG_DATA_DIRS="${OS_PATH}/share:$XDG_DATA_DIRS"
