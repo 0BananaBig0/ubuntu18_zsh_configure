@@ -89,8 +89,8 @@ add_to_multiple_env_vars() {
 
 
 # Add env
-add_to_multiple_env_vars "/usr/local"
 add_to_multiple_env_vars "/usr"
+add_to_multiple_env_vars "/usr/local"
 add_to_multiple_env_vars "${HOME}/.local"
 # Check if a desktop environment is currently running by looking for common desktop processes
 if ! ps -e | grep -q -E "gnome*|xfce4*"; then
