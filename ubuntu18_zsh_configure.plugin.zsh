@@ -29,178 +29,226 @@ MODE_INDICATOR="%F{white}<<<%f"
 
 
 
+# Define some functions:
+# 函数：安全地添加路径到环境变量
+# 参数：
+#   $1: 环境变量名称 (如 PATH, LD_LIBRARY_PATH)
+#   $2: 要添加的路径
+#   $3: 添加位置，可选值 "before" 或 "after"，默认为 "before"
+add_to_env_var() {
+    local var_name="$1"
+    local new_path="$2"
+    local position="${3:-before}"
+
+    # 判断路径是否存在
+    if [[ ! -d "$new_path" ]]; then
+        return 1
+    fi
+
+    # zsh 原生间接引用方式
+    local current_value="${(P)var_name}"
+
+    # 判断环境变量是否为空
+    if [[ -z "$current_value" ]]; then
+        export "$var_name=$new_path"
+        return 0
+    fi
+
+    # 根据位置添加
+    case "$position" in
+        before|前面|前)
+            export "$var_name=$new_path:$current_value"
+            ;;
+        after|后面|后)
+            export "$var_name=$current_value:$new_path"
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+
+    return 0
+}
+# 使用示例：
+# add_to_env_var "PATH" "/usr/local/bin" "before"
+# add_to_env_var "LD_LIBRARY_PATH" "/opt/lib" "after"
+add_to_multiple_env_vars() {
+    local new_path="$1"
+    local position="${2:-before}"
+    if [[ ! -d "${new_path}" ]]; then
+        return 0
+    fi
+    add_to_env_var "PATH" "${new_path}/bin" "${position}"
+    add_to_env_var "LIBRARY_PATH" "${new_path}/lib" "${position}"
+    add_to_env_var "LD_LIBRARY_PATH" "${new_path}/lib" "${position}"
+    add_to_env_var "C_INCLUDE_PATH" "${new_path}/include" "${position}"
+    add_to_env_var "CPLUS_INCLUDE_PATH" "${new_path}/include" "${position}"
+    add_to_env_var "XDG_DATA_DIRS" "${new_path}/share" "${position}"
+}
+
+
+
 # Add env
-[[ -d "/usr/local/bin" && ":$PATH:" != *":/usr/local/bin:"* ]] && PATH="$PATH:/usr/local/bin"
-[[ -d "/usr/lib" && ":$LD_LIBRARY_PATH:" != *":/usr/lib:"* ]] && LD_LIBRARY_PATH="/usr/lib${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
-[[ -d "/usr/local/lib" && ":$LD_LIBRARY_PATH:" != *":/usr/local/lib:"* ]] && LD_LIBRARY_PATH="/usr/local/lib:$LD_LIBRARY_PATH"
-[[ -d "/usr/lib" && ":$LIBRARY_PATH:" != *":/usr/lib:"* ]] && LIBRARY_PATH="/usr/lib${LIBRARY_PATH:+:${LIBRARY_PATH}}"
-[[ -d "/usr/local/lib" && ":$LIBRARY_PATH:" != *":/usr/local/lib:"* ]] && LIBRARY_PATH="/usr/local/lib:$LIBRARY_PATH"
-[[ -d "/usr/share" && ":$XDG_DATA_DIRS:" != *":/usr/share:"* ]] && XDG_DATA_DIRS="/usr/share${XDG_DATA_DIRS:+:${XDG_DATA_DIRS}}"
-[[ -d "/usr/local/share" && ":$XDG_DATA_DIRS:" != *":/usr/local/share:"* ]] && XDG_DATA_DIRS="/usr/local/share:$XDG_DATA_DIRS"
-if [ -s "$HOME/.local" ]; then
-  [[ -d "$HOME/.local/bin" && ":$PATH:" != *":$HOME/.local/bin:"* ]] && PATH="$HOME/.local/bin:$PATH"
-  [[ -d "$HOME/.local/lib" && ":$LD_LIBRARY_PATH:" != *":$HOME/.local/lib:"* ]] && LD_LIBRARY_PATH="$HOME/.local/lib:$LD_LIBRARY_PATH"
-  [[ -d "$HOME/.local/lib" && ":$LIBRARY_PATH:" != *":$HOME/.local/lib:"* ]] && LIBRARY_PATH="$HOME/.local/lib:$LIBRARY_PATH"
-  [[ -d "$HOME/.local/share" && ":$XDG_DATA_DIRS:" != *":$HOME/.local/share:"* ]] && XDG_DATA_DIRS="$HOME/.local/share:$XDG_DATA_DIRS"
-fi
+add_to_multiple_env_vars "/usr/local"
+add_to_multiple_env_vars "/usr"
+add_to_multiple_env_vars "${HOME}/.local"
 # Check if a desktop environment is currently running by looking for common desktop processes
 if ! ps -e | grep -q -E "gnome*|xfce4*"; then
-  # Check if any XFCE-related binaries exist (loop through known binaries)
-  xfce_binaries=($(find /usr/bin -name 'xfce*'))
-  for bin in "${xfce_binaries[@]}"; do
-    if command -v "$bin" >/dev/null 2>&1; then
-      export XDG_CURRENT_DESKTOP="XFCE"
-      break
+    # Check if any XFCE-related binaries exist (loop through known binaries)
+    xfce_binaries=($(find /usr/bin -name 'xfce*'))
+    for bin in "${xfce_binaries[@]}"; do
+        if command -v "$bin" >/dev/null 2>&1; then
+            export XDG_CURRENT_DESKTOP="XFCE"
+            break
+        fi
+    done
+    # If no XFCE binaries found, check for GNOME-related binaries (loop through known binaries)
+    gnome_binaries=($(find /usr/bin -name 'gnome*'))
+    for bin in "${gnome_binaries[@]}"; do
+        if command -v "$bin" >/dev/null 2>&1; then
+            export XDG_CURRENT_DESKTOP="GNOME"
+            break
+        fi
+    done
+    # For some applications, even if you don't have any desktop environment installed,
+    # the XDG_CURRENT_DESKTOP variable must not be empty.
+    if [ -z "$XDG_CURRENT_DESKTOP" ]; then
+        export XDG_CURRENT_DESKTOP="XFCE"
     fi
-  done
-  # If no XFCE binaries found, check for GNOME-related binaries (loop through known binaries)
-  gnome_binaries=($(find /usr/bin -name 'gnome*'))
-  for bin in "${gnome_binaries[@]}"; do
-    if command -v "$bin" >/dev/null 2>&1; then
-      export XDG_CURRENT_DESKTOP="GNOME"
-      break
-    fi
-  done
-  # For some applications, even if you don't have any desktop environment installed,
-  # the XDG_CURRENT_DESKTOP variable must not be empty.
-  if [ -z "$XDG_CURRENT_DESKTOP" ]; then
-    export XDG_CURRENT_DESKTOP="XFCE"
-  fi
 fi
 
 
 
 # Personal functions
 find_root_path() {
-  # Step 1: Define an array of root patterns
-  local root_patterns=(".git" ".hg" ".projections.json" ".project" ".svn" ".root" ".vscode" "SConstruct")
-  local current_path="$PWD"
+    # Step 1: Define an array of root patterns
+    local root_patterns=(".git" ".hg" ".projections.json" ".project" ".svn" ".root" ".vscode" "SConstruct")
+    local current_path="$PWD"
 
-  # Step 2: Traverse up to the root
-  while [[ "$current_path" != "$HOME" && "$current_path" != "/home/$SUDO_USER" && "$current_path" != "/" ]]; do
-    for pattern in "${root_patterns[@]}"; do
-      # Check if the pattern exists as a file or directory
-      if [[ -e "$current_path/$pattern" ]]; then
-        echo "$current_path"
-        return 0
-      fi
+    # Step 2: Traverse up to the root
+    while [[ "$current_path" != "${HOME}" && "$current_path" != "/home/$SUDO_USER" && "$current_path" != "/" ]]; do
+        for pattern in "${root_patterns[@]}"; do
+            # Check if the pattern exists as a file or directory
+            if [[ -e "$current_path/$pattern" ]]; then
+                echo "$current_path"
+                return 0
+            fi
+        done
+        # Move to the parent directory
+        current_path=$(dirname "$current_path")
     done
-    # Move to the parent directory
-    current_path=$(dirname "$current_path")
-  done
 
-  # Step 3: If no match, return the current path and echo a message
-  echo "$PWD"
-  echo "Warning: You had better create a root-pattern file like .git in your project." >&2
-  return 1
+    # Step 3: If no match, return the current path and echo a message
+    echo "$PWD"
+    echo "Warning: You had better create a root-pattern file like .git in your project." >&2
+    return 1
 }
 
 check_and_copy_file() {
-  local source_path="$HOME/.vim/.c_cpp"
-  local workspace_path="$1"
-  local file_name="$2"
+    local source_path="${HOME}/.vim/.c_cpp"
+    local workspace_path="$1"
+    local file_name="$2"
 
-  # Check if the file exists in the current workspace
-  if [[ -e "$workspace_path/$file_name" ]]; then
-    echo "File $workspace_path/$file_name has existed."
-  elif [[ -e "$source_path/$file_name" ]]; then
-    # If the file exists in the specific path, copy it to the current workspace
-    cp "$source_path/$file_name" "$workspace_path/$file_name"
-  else
-    # If the file doesn't exist in either location
-    echo "Warning: File $source_path/$file_name and $workspace_path/$file_name file do not exist."
-    return 0
-  fi
-  return 1
+    # Check if the file exists in the current workspace
+    if [[ -e "$workspace_path/$file_name" ]]; then
+        echo "File $workspace_path/$file_name has existed."
+    elif [[ -e "$source_path/$file_name" ]]; then
+        # If the file exists in the specific path, copy it to the current workspace
+        cp "$source_path/$file_name" "$workspace_path/$file_name"
+    else
+        # If the file doesn't exist in either location
+        echo "Warning: File $source_path/$file_name and $workspace_path/$file_name file do not exist."
+        return 0
+    fi
+    return 1
 }
 
 configure() {
-  # Argument: $1 (could be clang, vscode, vimspector, dbg, all or "")
-  local action="$1"
-  local recursive="$2"
-  # Only created and assigned once, a global var
-  if [ -z "$workspace_path" ]; then
-    workspace_path=$(find_root_path)
-  fi
+    # Argument: $1 (could be clang, vscode, vimspector, dbg, all or "")
+    local action="$1"
+    local recursive="$2"
+    # Only created and assigned once, a global var
+    if [ -z "$workspace_path" ]; then
+        workspace_path=$(find_root_path)
+    fi
 
-  case "$action" in
-    clang)
-      check_and_copy_file $workspace_path ".clangd"
-      check_and_copy_file $workspace_path ".clang-format"
-      check_and_copy_file $workspace_path ".clang-tidy"
-      if [[ $recursive -eq 1 ]]; then
-        return 1
-      fi
-      ;;
-    vscode)
-      if [[ ! -d "$workspace_path/.vscode" ]]; then
-        mkdir "$workspace_path/.vscode"
-      fi
-      check_and_copy_file $workspace_path ".vscode/launch.json"
-      if [[ $recursive -eq 1 ]]; then
-        return 1
-      fi
-      ;;
-    vimspector)
-      check_and_copy_file $workspace_path ".vimspector.json"
-      local result=$?
-      if [[ $result -eq 1 ]]; then
-        gvim "$workspace_path/.vimspector.json"
-      fi
-      if [[ $recursive -eq 1 ]]; then
-        return 1
-      fi
-      ;;
-    dbg)
-      configure vscode 1
-      configure vimspector 1
-      ;;
-    all)
-      configure clang 1
-      configure dbg 1
-      ;;
-    "")
-      configure clang 1
-      configure vimspector 1
-      ;;
-    *)
-      echo "Invalid argument: '$action'. Please specify clang, vscode, vimspector, dbg, all or \"\"."
-      return 0
-      ;;
-  esac
-  unset workspace_path
-  return 1
+    case "$action" in
+        clang)
+            check_and_copy_file $workspace_path ".clangd"
+            check_and_copy_file $workspace_path ".clang-format"
+            check_and_copy_file $workspace_path ".clang-tidy"
+            if [[ $recursive -eq 1 ]]; then
+              return 1
+            fi
+            ;;
+        vscode)
+            if [[ ! -d "$workspace_path/.vscode" ]]; then
+              mkdir "$workspace_path/.vscode"
+            fi
+            check_and_copy_file $workspace_path ".vscode/launch.json"
+            if [[ $recursive -eq 1 ]]; then
+              return 1
+            fi
+            ;;
+        vimspector)
+            check_and_copy_file $workspace_path ".vimspector.json"
+            local result=$?
+            if [[ $result -eq 1 ]]; then
+              gvim "$workspace_path/.vimspector.json"
+            fi
+            if [[ $recursive -eq 1 ]]; then
+              return 1
+            fi
+            ;;
+        dbg)
+            configure vscode 1
+            configure vimspector 1
+            ;;
+        all)
+            configure clang 1
+            configure dbg 1
+            ;;
+        "")
+            configure clang 1
+            configure vimspector 1
+            ;;
+        *)
+            echo "Invalid argument: '$action'. Please specify clang, vscode, vimspector, dbg, all or \"\"."
+            return 0
+            ;;
+    esac
+    unset workspace_path
+    return 1
 }
 
 
 
 # Set ROS melodic
 if [ -x "/opt/ros/melodic/setup.zsh" ]; then
-  source /opt/ros/melodic/setup.zsh
-  export ROS_HOSTNAME=$(hostname -I | awk '{print $1}')
-  export ROS_MASTER_URI=http://${ROS_HOSTNAME}:11311
+    source /opt/ros/melodic/setup.zsh
+    export ROS_HOSTNAME=$(hostname -I | awk '{print $1}')
+    export ROS_MASTER_URI=http://${ROS_HOSTNAME}:11311
 fi
-if [ -x "$HOME/catkin_ws/devel/setup.zsh" ]; then
-  source $HOME/catkin_ws/devel/setup.zsh
+if [ -x "${HOME}/catkin_ws/devel/setup.zsh" ]; then
+    source ${HOME}/catkin_ws/devel/setup.zsh
 fi
-if [ -x "$HOME/study_ws/devel/setup.zsh" ]; then
-  source $HOME/study_ws/devel/setup.zsh
+if [ -x "${HOME}/study_ws/devel/setup.zsh" ]; then
+    source ${HOME}/study_ws/devel/setup.zsh
 fi
 
 
 
 # Set MATLAB
-if [ -d $HOME/Polyspace/R2021a/bin ]; then
-  alias matlab='$HOME/Polyspace/R2021a/bin/matlab >/dev/null 2>&1 &'
+if [ -d ${HOME}/Polyspace/R2021a/bin ]; then
+    alias matlab='${HOME}/Polyspace/R2021a/bin/matlab >/dev/null 2>&1 &'
 fi
 
 
 
 # Set CUDA
 if [ -d /usr/local/cuda ]; then
-  [[ -d "/usr/local/cuda/bin" && ":$PATH:" != *":/usr/local/cuda/bin:"* ]] && PATH="/usr/local/cuda/bin:$PATH"
-  [[ -d "/usr/local/cuda/lib64" && ":$LD_LIBRARY_PATH:" != *":/usr/local/cuda/lib64:"* ]] && LD_LIBRARY_PATH="/usr/local/cuda/lib64:$LD_LIBRARY_PATH"
-  [[ -d "/usr/local/cuda/lib64/cmake" && ":$CMAKE_PREFIX_PATH:" != *":/usr/local/cuda/lib64/cmake:"* ]] && CMAKE_PREFIX_PATH="/usr/local/cuda/lib64/cmake${CMAKE_PREFIX_PATH:+:${CMAKE_PREFIX_PATH}}"
+    add_to_multiple_env_vars "/usr/local/cuda"
+    add_to_env_var "CMAKE_PREFIX_PATH" "/usr/local/cuda/lib64/cmake"
 fi
 
 
@@ -220,15 +268,17 @@ alias clangs='clang -S -fverbose-asm'
 
 # Set Go language
 if command -v go > /dev/null 2>&1; then
-  if [ ! -s "$HOME/.local/.go" ]; then
-    mkdir $HOME/.local/.go -p
-  fi
-  [[ -d "$HOME/.local/.go" && ":$GOPATH:" != *":$HOME/.local/.go:"* ]] && export GOPATH="$HOME/.local/.go${GOPATH:+:${GOPATH}}"
-  [[ -d "${GOPATH//://bin:}/bin" && ":$PATH:" != *":${GOPATH//://bin:}/bin:"* ]] && PATH="${GOPATH//://bin:}/bin:$PATH"
-  export GO111MODULE=on
-  # Set the GOPROXY environment variable
-  export GOPROXY=https://goproxy.cn,direct
-  export GOSUMDB=sum.golang.google.cn
+    if [ ! -s "${HOME}/.local/.go" ]; then
+        mkdir ${HOME}/.local/.go -p
+    fi
+    add_to_env_var "GOPATH" "${HOME}/.local/.go"
+    for p in ${(s.:.)GOPATH}; do
+        add_to_env_var "PATH" "$p/bin" "before"
+    done
+    export GO111MODULE=on
+    # Set the GOPROXY environment variable
+    export GOPROXY=https://goproxy.cn,direct
+    export GOSUMDB=sum.golang.google.cn
 fi
 
 
@@ -236,147 +286,129 @@ fi
 # Set Cargo
 export RUSTUP_DIST_SERVER="https://rsproxy.cn"
 export RUSTUP_UPDATE_ROOT="https://rsproxy.cn/rustup"
-export CARGO_HOME="$HOME/.cargo"
-export RUSTUP_HOME="$HOME/.rustup"
-if [ -s "$HOME/.cargo" ]; then
-  [[ -d "$HOME/.cargo/bin" && ":$PATH:" != *":$HOME/.cargo/bin:"* ]] && PATH="$HOME/.cargo/bin:$PATH"
-fi
+export CARGO_HOME="${HOME}/.cargo"
+export RUSTUP_HOME="${HOME}/.rustup"
+add_to_env_var "PATH" "${HOME}/.cargo"
 if command -v zoxide >/dev/null 2>&1;then
-  eval "$(zoxide init zsh)"
+    eval "$(zoxide init zsh)"
 fi
 
 
 
 # Support wsl2 gui applications
 if grep -q WSL2 /proc/version; then
-  export DISPLAY=:0
-  # For wsl2 vscode
-  export DONT_PROMPT_WSL_INSTALL=1
-  # Disable Wayland
-  export GDK_BACKEND=x11
-  unset WAYLAND_DISPLAY
+    export DISPLAY=:0
+    # For wsl2 vscode
+    export DONT_PROMPT_WSL_INSTALL=1
+    # Disable Wayland
+    export GDK_BACKEND=x11
+    unset WAYLAND_DISPLAY
 fi
 
 
 
 # Perl settings
 if command -v perl > /dev/null 2>&1; then
-  if [ ! -d $HOME/.local/perl5 ]; then
-    mkdir $HOME/.local/perl5 -p
-  fi
-  [[ -d "$HOME/.local/perl5/bin" && ":$PATH:" != *":$HOME/.local/perl5/bin:"* ]] && PATH="$HOME/.local/perl5/bin:$PATH"
-  [[ -d "$HOME/.local/perl5/lib" && ":$PERL5LIB:" != *":$HOME/.local/perl5/lib:"* ]] && export PERL5LIB="$HOME/.local/perl5/lib${PERL5LIB:+:${PERL5LIB}}"
-  [[ -d "$HOME/.local/perl5/lib/perl5" && ":$PERL5LIB:" != *":$HOME/.local/perl5/lib/perl5:"* ]] && export PERL5LIB="$HOME/.local/perl5/lib/perl5${PERL5LIB:+:${PERL5LIB}}"
-  [[ -d "$HOME/.local/perl5" && ":$PERL_LOCAL_LIB_ROOT:" != *":$HOME/.local/perl5:"* ]] && export PERL_LOCAL_LIB_ROOT="$HOME/.local/perl5${PERL_LOCAL_LIB_ROOT:+:${PERL_LOCAL_LIB_ROOT}}"
-  PERL_MB_OPT="--install_base \"$HOME/.local/perl5\""; export PERL_MB_OPT;
-  PERL_MM_OPT="INSTALL_BASE=$HOME/.local/perl5"; export PERL_MM_OPT;
-  alias cpanm="cpanm --local-lib=$HOME/.local/perl5"
-  alias pldb="perl -Mdiagnostics"
+    if [ ! -d ${HOME}/.local/perl5 ]; then
+        mkdir ${HOME}/.local/perl5 -p
+    fi
+    add_to_env_var "PATH" "${HOME}/.local/perl5/bin"
+    add_to_env_var "PERL5LIB" "${HOME}/.local/perl5/lib"
+    add_to_env_var "PERL5LIB" "${HOME}/.local/perl5/lib/perl5"
+    add_to_env_var "PERL_LOCAL_LIB_ROOT" "${HOME}/.local/perl5"
+    PERL_MB_OPT="--install_base \"${HOME}/.local/perl5\""; export PERL_MB_OPT;
+    PERL_MM_OPT="INSTALL_BASE=${HOME}/.local/perl5"; export PERL_MM_OPT;
+    alias cpanm="cpanm --local-lib=${HOME}/.local/perl5"
+    alias pldb="perl -Mdiagnostics"
 fi
 
 
 
 # Qt6 settings
-if [ -d $HOME/.Qt6 ]; then
-  export Qt6_DIR=$HOME/.Qt6   # Replace with your Qt install path
-  export PATH=$Qt6_DIR/Tools/QtCreator/bin:$PATH
-  for dir in $Qt6_DIR/*/gcc_64; do
-    [[ -d "$dir" && ":$PATH:" != *":$dir/bin:"* ]] && PATH="$dir/bin:$PATH"
-    [[ -d "$dir" && ":$LIBRARY_PATH:" != *":$dir/lib:"* ]] && LIBRARY_PATH="$dir/lib:$LIBRARY_PATH"
-    [[ -d "$dir" && ":$LD_LIBRARY_PATH:" != *":$dir/lib:"* ]] && LD_LIBRARY_PATH="$dir/lib:$LD_LIBRARY_PATH"
-    # Affect not only gcc default options but also g++ default options; Always -I all path listed in C_INCLUDE_PATH
-    [[ -d "$dir" && ":$C_INCLUDE_PATH:" != *":$dir/include:"* ]] && C_INCLUDE_PATH="$dir/include${C_INCLUDE_PATH:+:${C_INCLUDE_PATH}}"
-    # Affect g++ default options; Always -I all path listed in CPLUS_INCLUDE_PATH
-    # [[ -d "$dir" && ":$CPLUS_INCLUDE_PATH:" != *":$dir/include:"* ]] && CPLUS_INCLUDE_PATH="$dir/include${CPLUS_INCLUDE_PATH:+:${CPLUS_INCLUDE_PATH}}"
-    [[ -d "$dir" && ":$CMAKE_PREFIX_PATH:" != *":$dir/lib/cmake:"* ]] && CMAKE_PREFIX_PATH="$dir/lib/cmake${CMAKE_PREFIX_PATH:+:${CMAKE_PREFIX_PATH}}"
-  done
-  # for dir in $Qt6_DIR/*/gcc_64/include/*; do
-  #   [[ -d "$dir" && ":$C_INCLUDE_PATH:" != *":$dir:"* ]] && C_INCLUDE_PATH="$dir:$C_INCLUDE_PATH"
-  #   [[ -d "$dir" && ":$CPLUS_INCLUDE_PATH:" != *":$dir:"* ]] && CPLUS_INCLUDE_PATH="$dir:$CPLUS_INCLUDE_PATH"
-  # done
-  export QT_QPA_PLATFORM=xcb # Not use wayland
-  if [[ -f /etc/os-release ]] && grep -q "openSUSE" /etc/os-release; then
-    export QT_XCB_GL_INTEGRATION=none
-  fi
+if [ -d ${HOME}/.Qt6 ]; then
+    export Qt6_DIR=${HOME}/.Qt6   # Replace with your Qt install path
+    add_to_env_var "PATH" "${Qt6_DIR}/Tools/QtCreator/bin"
+    for dir in $Qt6_DIR/*/gcc_64; do
+        # Affect not only gcc default options but also g++ default options; Always -I all path listed in C_INCLUDE_PATH
+        add_to_multiple_env_vars "${dir}"
+        add_to_env_var "CMAKE_PREFIX_PATH" "${dir}/lib/cmake"
+    done
+    export QT_QPA_PLATFORM=xcb # Not use wayland
+    if [[ -f /etc/os-release ]] && grep -q "openSUSE" /etc/os-release; then
+        export QT_XCB_GL_INTEGRATION=none
+    fi
 fi
 
 
 
 # Mentor  settings
-if [[ -d /EDA/library ]]; then
-  export LD_LIBRARY_PATH=/EDA/library/lib:$LD_LIBRARY_PATH
-fi
+add_to_env_var "LD_LIBRARY_PATH" "/EDA/library/lib"
 if [[ -d /EDA/Mentor ]]; then
-  export Mentor_Dir=/EDA/Mentor
-  export MGLS_LICENSE_FILE=$Mentor_Dir/license/license.dat
-  export MGC_LICENSE_FILE=$Mentor_Dir/license/license.dat
-  export LM_LICENSE_FILE=$Mentor_Dir/license/license.dat
-  if [[ -d $Mentor_Dir/calibre ]]; then
-    export CALIBRE_HOME=$Mentor_Dir/calibre
-  fi
-  if [[ -d $Mentor_Dir/questasim ]]; then
-    export QUESTA_HOME=/EDA/Mentor/questasim
-  fi
-  if [[ -d $Mentor_Dir/tessent ]]; then
-    export TESSENT_HOME=/EDA/Mentor/tessent
-  fi
-  if [[ -d $Mentor_Dir/oasys ]]; then
-    export OASYS_HOME=/EDA/Mentor/tessent
-  fi
-  setopt extended_glob  # Enable Zsh extended globbing
-  for dir in $Mentor_Dir/^(*[0-9]*)/bin; do
-    [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
-  done
+    export Mentor_Dir=/EDA/Mentor
+    export MGLS_LICENSE_FILE=$Mentor_Dir/license/license.dat
+    export MGC_LICENSE_FILE=$Mentor_Dir/license/license.dat
+    export LM_LICENSE_FILE=$Mentor_Dir/license/license.dat
+    add_to_env_var "CALIBRE_HOME" "${Mentor_Dir}/calibre"
+    add_to_env_var "QUESTA_HOME" "${Mentor_Dir}/questasim"
+    add_to_env_var "TESSENT_HOME" "${Mentor_Dir}/tessent"
+    add_to_env_var "OASYS_HOME" "${Mentor_Dir}/oasys"
+    for dir in $Mentor_Dir/^(*[0-9]*)/bin; do
+        add_to_env_var "PATH" "${dir}"
+    done
 fi
 
 
 
 # Synopsys settings
 if [[ -d /EDA/Synopsys ]]; then
-  export Synopsys_Dir=/EDA/Synopsys
-  export SNPSLMV_LICENSE_FILE=27000@Banana
-  export LM_LICENSE_FILE=27000@Banana
-  export SNPSLMD_LICENSE_FILE=$Synopsys_Dir/license/Synopsys.dat
-  export LM_LICENSE_FILE=$SNPSLMD_LICENSE_FILE
-  if [[ -d $Synopsys_Dir/vcs/vcs ]]; then
-    export VCS_HOME=$Synopsys_Dir/vcs/vcs
-    export VCS_ARCH_OVERRIDE=linux
-    export VCS_TARGET_ARCH="amd64"
-    alias vcs64="vcs -full64"
-  fi
-  if [[ -d $Synopsys_Dir/verdi/verdi ]]; then
-    export VERDI_HOME=$Synopsys_Dir/verdi/verdi
-    export LD_LIBRARY_PATH=$VERDI_HOME/share/PLI/lib/LINUX64:$LD_LIBRARY_PATH
-    export VERDI_DIR=$VERDI_HOME
-    alias verdi="verdi -full64 &"
-  fi
-  if [[ -d $Synopsys_Dir/scl/scl ]]; then
-    export SCL_HOME=$Synopsys_Dir/scl/scl
-    alias load_syn="$SCL_HOME/linux64/bin/lmgrd -c $SNPSLMD_LICENSE_FILE -l /tmp/syn.debug.log"
-  fi
-  for dir in $Synopsys_Dir/^(*[0-9]*)/^(*[0-9]*)/bin; do
-    [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
-  done
+    export Synopsys_Dir=/EDA/Synopsys
+    export SNPSLMV_LICENSE_FILE=27000@Banana
+    export LM_LICENSE_FILE=27000@Banana
+    export SNPSLMD_LICENSE_FILE=${Synopsys_Dir}/license/Synopsys.dat
+    export LM_LICENSE_FILE=$SNPSLMD_LICENSE_FILE
+    if [[ -d $Synopsys_Dir/vcs/vcs ]]; then
+        export VCS_HOME=$Synopsys_Dir/vcs/vcs
+        export VCS_ARCH_OVERRIDE=linux
+        export VCS_TARGET_ARCH="amd64"
+        alias vcs64="vcs -full64"
+    fi
+    if [[ -d $Synopsys_Dir/verdi/verdi ]]; then
+        export VERDI_HOME=$Synopsys_Dir/verdi/verdi
+        export LD_LIBRARY_PATH=$VERDI_HOME/share/PLI/lib/LINUX64:$LD_LIBRARY_PATH
+        export VERDI_DIR=$VERDI_HOME
+        alias verdi="verdi -full64 &"
+    fi
+    if [[ -d $Synopsys_Dir/scl/scl ]]; then
+        export SCL_HOME=$Synopsys_Dir/scl/scl
+        alias load_syn="$SCL_HOME/linux64/bin/lmgrd -c $SNPSLMD_LICENSE_FILE -l /tmp/syn.debug.log"
+    fi
+    for dir in $Synopsys_Dir/^(*[0-9]*)/^(*[0-9]*)/bin; do
+        [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
+    done
 fi
 
 
 
 # Alias pip3
-for dir in $HOME/.local/lib/python3*/site-packages; do
-  if [[ -d $dir/pip ]]; then
-    alias pip='python3 -m pip'
-    alias pip3='python3 -m pip'
-  fi
+for dir in ${HOME}/.local/lib/python3*/site-packages; do
+    if [[ -d $dir/pip ]]; then
+        alias pip='python3 -m pip'
+        alias pip3='python3 -m pip'
+    fi
 done
+
+
 
 # Ruby and rbenv configuration
 if command -v rbenv > /dev/null 2>&1; then
-  if [ ! -s "$HOME/.rbenv/bin" ]; then
-    mkdir $HOME/.rbenv/bin -p
-  fi
-  export PATH="$HOME/.rbenv/bin:$PATH"
-  eval "$(rbenv init - zsh)"
+    if [ ! -s "${HOME}/.rbenv/bin" ]; then
+        mkdir ${HOME}/.rbenv/bin -p
+    fi
+    add_to_env_var "PATH" "${HOME}/.rbenv/bin"
+    eval "$(rbenv init - zsh)"
 fi
+
+
 
 # Set env for eda-rocky8
 BOSIOS="/data/bosios"
@@ -391,50 +423,27 @@ if [ -d "${BOSIOS}" ]; then
         NODE_PATH="${BOSIOS}/nvm/versions/node/${LATEST_VERSION}"
         if [ -n "$LATEST_VERSION" ]; then
             NODE_PATH="${NVM_DIR}/${LATEST_VERSION}"
-            # 生成环境变量配置
-            # Node.js 环境变量配置 (自动检测最新版本: $LATEST_VERSION)
-            [[ -d "${NODE_PATH}/bin" && ":$PATH:" != *":${NODE_PATH}/bin:"* ]] && PATH="${NODE_PATH}/bin:$PATH"
-            [[ -d "${NODE_PATH}/lib" && ":$LD_LIBRARY_PATH:" != *":${NODE_PATH}/lib:"* ]] && LD_LIBRARY_PATH="${NODE_PATH}/lib:$LD_LIBRARY_PATH"
-            [[ -d "${NODE_PATH}/lib" && ":$LIBRARY_PATH:" != *":${NODE_PATH}/lib:"* ]] && LIBRARY_PATH="${NODE_PATH}/lib:$LIBRARY_PATH"
-            [[ -d "${NODE_PATH}/share" && ":$XDG_DATA_DIRS:" != *":${NODE_PATH}/share:"* ]] && XDG_DATA_DIRS="${NODE_PATH}/share:$XDG_DATA_DIRS"
+            add_to_multiple_env_vars "${NODE_PATH}"
         fi
     fi
     for OS_PATH in ${BOSIOS}/*; do
-        [[ -d "${OS_PATH}/bin" && ":$PATH:" != *":${OS_PATH}/bin:"* ]] && PATH="${OS_PATH}/bin:$PATH"
-        [[ -d "${OS_PATH}/lib" && ":$LD_LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LD_LIBRARY_PATH="${OS_PATH}/lib:$LD_LIBRARY_PATH"
-        [[ -d "${OS_PATH}/lib" && ":$LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LIBRARY_PATH="${OS_PATH}/lib:$LIBRARY_PATH"
-        [[ -d "${OS_PATH}/share" && ":$XDG_DATA_DIRS:" != *":${OS_PATH}/share:"* ]] && XDG_DATA_DIRS="${OS_PATH}/share:$XDG_DATA_DIRS"
+        add_to_multiple_env_vars "${OS_PATH}"
     done
     if [ -d "${BOSIOS}/node_modules" ]; then
         for OS_PATH in ${BOSIOS}/node_modules/*; do
-            [[ -d "${OS_PATH}/bin" && ":$PATH:" != *":${OS_PATH}/bin:"* ]] && PATH="${OS_PATH}/bin:$PATH"
-            [[ -d "${OS_PATH}/lib" && ":$LD_LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LD_LIBRARY_PATH="${OS_PATH}/lib:$LD_LIBRARY_PATH"
-            [[ -d "${OS_PATH}/lib" && ":$LIBRARY_PATH:" != *":${OS_PATH}/lib:"* ]] && LIBRARY_PATH="${OS_PATH}/lib:$LIBRARY_PATH"
-            [[ -d "${OS_PATH}/share" && ":$XDG_DATA_DIRS:" != *":${OS_PATH}/share:"* ]] && XDG_DATA_DIRS="${OS_PATH}/share:$XDG_DATA_DIRS"
+            add_to_multiple_env_vars "${OS_PATH}"
         done
     fi
 
     # Configure python3 pip install
-    if [[ -d "/data/bosios/python/lib64/python3.12/site-packages" ]]; then
-        if [[ -z "$PYTHONPATH" ]]; then
-            PYTHONPATH="/data/bosios/python/lib64/python3.12/site-packages"
-        elif [[ ":$PYTHONPATH:" != *":/data/bosios/python/lib64/python3.12/site-packages:"* ]]; then
-            PYTHONPATH="/data/bosios/python/lib64/python3.12/site-packages:$PYTHONPATH"
-        fi
-    fi
-    if [[ -d "/data/bosios/python/lib/python3.12/site-packages" ]]; then
-        if [[ -z "$PYTHONPATH" ]]; then
-            PYTHONPATH="/data/bosios/python/lib/python3.12/site-packages"
-        elif [[ ":$PYTHONPATH:" != *":/data/bosios/python/lib/python3.12/site-packages:"* ]]; then
-            PYTHONPATH="/data/bosios/python/lib/python3.12/site-packages:$PYTHONPATH"
-        fi
-    fi
+    add_to_env_var "PYTHONPATH" "/data/bosios/python/lib64/python3.12/site-packages"
+    add_to_env_var "PYTHONPATH" "/data/bosios/python/lib/python3.12/site-packages"
     alias python3='python3.12'
     alias pip='python3.12 -m pip'
     alias pip3='python3.12 -m pip'
 
     # Configure eda
-    if [[ -d "/data/eda/bashrc/bashrc.eda" ]]; then
+    if [[ -s "/data/eda/bashrc/bashrc.eda" ]]; then
         source /data/eda/bashrc/bashrc.eda
     fi
 fi
