@@ -10,6 +10,7 @@ export PYTHONPATH=$PYTHONPATH # for python -m pip install modules
 # Prevent exe files from appearing in auto-completion
 FIGNORE=".exe"
 setopt extended_glob  # Enable Zsh extended globbing
+alias rp='realpath'
 
 
 
@@ -432,4 +433,5 @@ if [ -d "${BOSIOS}" ]; then
     alias python3='python3.12'
     alias pip='python3.12 -m pip'
     alias pip3='python3.12 -m pip'
+    source /data/eda/bashrc/bashrc.eda
 fi
