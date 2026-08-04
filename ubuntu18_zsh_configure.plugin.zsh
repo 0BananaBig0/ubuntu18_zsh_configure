@@ -6,6 +6,7 @@ export CPLUS_INCLUDE_PATH=$CPLUS_INCLUDE_PATH
 export CMAKE_PREFIX_PATH=$CMAKE_PREFIX_PATH
 export XDG_DATA_DIRS=$XDG_DATA_DIRS # for showing icons
 export XDG_CURRENT_DESKTOP=$XDG_CURRENT_DESKTOP # for showing icons
+export PYTHONPATH=$PYTHONPATH # for python -m pip install modules
 # Prevent exe files from appearing in auto-completion
 FIGNORE=".exe"
 setopt extended_glob  # Enable Zsh extended globbing
@@ -414,6 +415,8 @@ if [ -d "${BOSIOS}" ]; then
     fi
 
     # Configure python3 pip install
+    [[ -d "/data/bosios/python/lib64/python3.12/site-packages" && ":$PYTHONPATH:" != *":/data/bosios/python/lib64/python3.12/site-packages:"* ]] && PYTHONPATH="/data/bosios/python/lib64/python3.12/site-packages:$PYTHONPATH"
+    [[ -d "/data/bosios/python/lib/python3.12/site-packages" && ":$PYTHONPATH:" != *":/data/bosios/python/lib/python3.12/site-packages:"* ]] && PYTHONPATH="/data/bosios/python/lib/python3.12/site-packages:$PYTHONPATH"
     alias python3='python3.12'
     alias pip='python3.12 -m pip'
     alias pip3='python3.12 -m pip'
