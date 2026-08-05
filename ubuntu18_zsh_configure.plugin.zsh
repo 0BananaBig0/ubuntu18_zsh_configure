@@ -81,9 +81,12 @@ add_to_multiple_env_vars() {
     add_to_env_var "PATH" "${new_path}/bin" "${position}"
     add_to_env_var "LIBRARY_PATH" "${new_path}/lib" "${position}"
     add_to_env_var "LD_LIBRARY_PATH" "${new_path}/lib" "${position}"
+    add_to_env_var "XDG_DATA_DIRS" "${new_path}/share" "${position}"
+    if [[ "${new_path}" == "/usr" || "${new_path}" == "/usr/local" ]]; then
+        return 0
+    fi
     add_to_env_var "C_INCLUDE_PATH" "${new_path}/include" "${position}"
     add_to_env_var "CPLUS_INCLUDE_PATH" "${new_path}/include" "${position}"
-    add_to_env_var "XDG_DATA_DIRS" "${new_path}/share" "${position}"
 }
 
 
