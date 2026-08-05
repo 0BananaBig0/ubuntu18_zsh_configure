@@ -1,3 +1,15 @@
+# *.plugin.zsh - Main entry point
+# Get the directory where this script is located
+0="${${ZERO:-${0:#$ZSH_ARGZERO}}:-${(%):-%N}}"
+0="${${(M)0:#/*}:-$PWD/$0}"
+PLUGIN_DIR="${0:h}"
+# Method 1: Source all scripts from lib directory
+for script in "${PLUGIN_DIR}"/function/*.zsh(.N); do
+    source "${script}"
+done
+
+
+
 # Initialize some envs
 export LIBRARY_PATH=$LIBRARY_PATH # for compile-time linking, including static libraries and dynamic libraries
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH # for load-time linking, merely including dynamic libraries
@@ -29,68 +41,6 @@ MODE_INDICATOR="%F{white}<<<%f"
 
 
 
-# Define some functions:
-# 函数：安全地添加路径到环境变量
-# 参数：
-#   $1: 环境变量名称 (如 PATH, LD_LIBRARY_PATH)
-#   $2: 要添加的路径
-#   $3: 添加位置，可选值 "before" 或 "after"，默认为 "before"
-add_to_env_var() {
-    local var_name="$1"
-    local new_path="$2"
-    local position="${3:-before}"
-
-    # 判断路径是否存在
-    if [[ ! -d "$new_path" ]]; then
-        return 1
-    fi
-
-    # zsh 原生间接引用方式
-    local current_value="${(P)var_name}"
-
-    # 判断环境变量是否为空
-    if [[ -z "$current_value" ]]; then
-        export "$var_name=$new_path"
-        return 0
-    fi
-
-    # 根据位置添加
-    case "$position" in
-        before|前面|前)
-            export "$var_name=$new_path:$current_value"
-            ;;
-        after|后面|后)
-            export "$var_name=$current_value:$new_path"
-            ;;
-        *)
-            return 1
-            ;;
-    esac
-
-    return 0
-}
-# 使用示例：
-# add_to_env_var "PATH" "/usr/local/bin" "before"
-# add_to_env_var "LD_LIBRARY_PATH" "/opt/lib" "after"
-add_to_multiple_env_vars() {
-    local new_path="$1"
-    local position="${2:-before}"
-    if [[ ! -d "${new_path}" ]]; then
-        return 0
-    fi
-    add_to_env_var "PATH" "${new_path}/bin" "${position}"
-    add_to_env_var "LIBRARY_PATH" "${new_path}/lib" "${position}"
-    add_to_env_var "LD_LIBRARY_PATH" "${new_path}/lib" "${position}"
-    add_to_env_var "XDG_DATA_DIRS" "${new_path}/share" "${position}"
-    if [[ "${new_path}" == "/usr" || "${new_path}" == "/usr/local" ]]; then
-        return 0
-    fi
-    add_to_env_var "C_INCLUDE_PATH" "${new_path}/include" "${position}"
-    add_to_env_var "CPLUS_INCLUDE_PATH" "${new_path}/include" "${position}"
-}
-
-
-
 # Add env
 add_to_multiple_env_vars "/usr"
 add_to_multiple_env_vars "/usr/local"
@@ -119,110 +69,6 @@ if ! ps -e | grep -q -E "gnome*|xfce4*"; then
         export XDG_CURRENT_DESKTOP="XFCE"
     fi
 fi
-
-
-
-# Personal functions
-find_root_path() {
-    # Step 1: Define an array of root patterns
-    local root_patterns=(".git" ".hg" ".projections.json" ".project" ".svn" ".root" ".vscode" "SConstruct")
-    local current_path="$PWD"
-
-    # Step 2: Traverse up to the root
-    while [[ "$current_path" != "${HOME}" && "$current_path" != "/home/$SUDO_USER" && "$current_path" != "/" ]]; do
-        for pattern in "${root_patterns[@]}"; do
-            # Check if the pattern exists as a file or directory
-            if [[ -e "$current_path/$pattern" ]]; then
-                echo "$current_path"
-                return 0
-            fi
-        done
-        # Move to the parent directory
-        current_path=$(dirname "$current_path")
-    done
-
-    # Step 3: If no match, return the current path and echo a message
-    echo "$PWD"
-    echo "Warning: You had better create a root-pattern file like .git in your project." >&2
-    return 1
-}
-
-check_and_copy_file() {
-    local source_path="${HOME}/.vim/.c_cpp"
-    local workspace_path="$1"
-    local file_name="$2"
-
-    # Check if the file exists in the current workspace
-    if [[ -e "$workspace_path/$file_name" ]]; then
-        echo "File $workspace_path/$file_name has existed."
-    elif [[ -e "$source_path/$file_name" ]]; then
-        # If the file exists in the specific path, copy it to the current workspace
-        cp "$source_path/$file_name" "$workspace_path/$file_name"
-    else
-        # If the file doesn't exist in either location
-        echo "Warning: File $source_path/$file_name and $workspace_path/$file_name file do not exist."
-        return 0
-    fi
-    return 1
-}
-
-configure() {
-    # Argument: $1 (could be clang, vscode, vimspector, dbg, all or "")
-    local action="$1"
-    local recursive="$2"
-    # Only created and assigned once, a global var
-    if [ -z "$workspace_path" ]; then
-        workspace_path=$(find_root_path)
-    fi
-
-    case "$action" in
-        clang)
-            check_and_copy_file $workspace_path ".clangd"
-            check_and_copy_file $workspace_path ".clang-format"
-            check_and_copy_file $workspace_path ".clang-tidy"
-            if [[ $recursive -eq 1 ]]; then
-              return 1
-            fi
-            ;;
-        vscode)
-            if [[ ! -d "$workspace_path/.vscode" ]]; then
-              mkdir "$workspace_path/.vscode"
-            fi
-            check_and_copy_file $workspace_path ".vscode/launch.json"
-            if [[ $recursive -eq 1 ]]; then
-              return 1
-            fi
-            ;;
-        vimspector)
-            check_and_copy_file $workspace_path ".vimspector.json"
-            local result=$?
-            if [[ $result -eq 1 ]]; then
-              gvim "$workspace_path/.vimspector.json"
-            fi
-            if [[ $recursive -eq 1 ]]; then
-              return 1
-            fi
-            ;;
-        dbg)
-            configure vscode 1
-            configure vimspector 1
-            ;;
-        all)
-            configure clang 1
-            configure dbg 1
-            ;;
-        "")
-            configure clang 1
-            configure vimspector 1
-            ;;
-        *)
-            echo "Invalid argument: '$action'. Please specify clang, vscode, vimspector, dbg, all or \"\"."
-            return 0
-            ;;
-    esac
-    unset workspace_path
-    return 1
-}
 
 
 
