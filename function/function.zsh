@@ -218,6 +218,58 @@ restore_terminal_config() {
     }
 }
 
+# 辅助：在 /usr/lib/jvm 中找可用的 JDK 根目录
+# 优先级：目录名含 latest > 版本号最大（支持 jre-*/bin/java）
+_find_latest_jdk() {
+    # 1. 找 /usr/lib/jvm 下目录名包含 latest 的（不是固定叫 latest）
+    local latest_dir
+    latest_dir=$(find /usr/lib/jvm -maxdepth 1 -type d -name '*latest*' 2>/dev/null | head -1)
+    if [[ -n "$latest_dir" ]]; then
+        # 如果是 symlink 解析真实路径，不是也直接用
+        readlink -f "$latest_dir"
+        return 0
+    fi
+
+    # 2. 兜底：扫描所有目录，按 java 真实版本号取最大
+    local best_home="" best_ver=""
+    [[ ! -d /usr/lib/jvm ]] && return 1
+
+    for d in /usr/lib/jvm/*; do
+        local java_bin=""
+        if [[ -x "$d/bin/java" ]]; then
+            java_bin="$d/bin/java"
+        elif [[ -x "$d/jre/bin/java" ]]; then
+            java_bin="$d/jre/bin/java"
+        else
+            continue
+        fi
+
+        local ver
+        ver="$("$java_bin" -version 2>&1 | head -1 | grep -oE '[0-9]+(\.[0-9]+)*' | head -1)"
+        [[ -z "$ver" ]] && continue
+
+        if [[ -z "$best_ver" ]] || \
+           [[ "$(printf "%s\n%s\n" "$ver" "$best_ver" | sort -V | tail -1)" == "$ver" ]]; then
+            best_ver="$ver"
+            best_home="$d"
+        fi
+    done
+
+    [[ -n "$best_home" ]] && echo "$best_home" && return 0
+    return 1
+}
+
+# 辅助：检查当前 java 是否 >= 11
+_check_java_version() {
+    local v; v=$(java -version 2>&1 | head -1)
+    if [[ "$v" =~ ([0-9]+)\.([0-9]+) ]]; then
+        local m=${BASH_REMATCH[1]}
+        [[ "$m" == "1" ]] && m=${BASH_REMATCH[2]}
+        (( m >= 11 )) && return 0
+    fi
+    return 1
+}
+
 backup_linux_config() {
     local dest_dir="${1:-${HOME}/configuration_file}"
 
@@ -227,7 +279,10 @@ backup_linux_config() {
         # 把所有 gcc 相关路径替换为统一占位符
         sed 's|sys\.path\.insert(0, '\''/[^'\'']*gcc[^'\'']*/python'\'')|sys.path.insert(0, '\''__GCC_PYTHON_PATH__'\'')|g' "${HOME}/.gdbinit" > "${dest_dir}/.gdbinit"
     }
-    [[ -f "${HOME}/.vim/coc-settings.json" ]] && cp -af "${HOME}/.vim/coc-settings.json" "${dest_dir}/"
+
+    [[ -f "${HOME}/.vim/coc-settings.json" ]] && {
+        sed '/"xml\.java\.home"/d' "${HOME}/.vim/coc-settings.json" > "${dest_dir}/coc-settings.json"
+    }
     [[ -f "${HOME}/.vimrc" ]] && cp -af "${HOME}/.vimrc" "${dest_dir}/"
     [[ -d "${HOME}/.vim/.c_cpp" ]] && cp -af "${HOME}/.vim/.c_cpp" "${dest_dir}/"
     [[ -f "${HOME}/.zshrc" ]] && cp -af "${HOME}/.zshrc" "${dest_dir}/"
@@ -266,10 +321,27 @@ restore_linux_config() {
             fi
         fi
     }
+
     [[ -f "${src_dir}/coc-settings.json" ]] && {
         mkdir -p "${HOME}/.vim"
-        cp -af "${src_dir}/coc-settings.json" "${HOME}/.vim/"
+        local target_file="${HOME}/.vim/coc-settings.json"
+        local src_file="${src_dir}/coc-settings.json"
+
+        if ! _check_java_version; then
+            jdk_home=$(_find_latest_jdk)
+            if [[ -n "$jdk_home" ]]; then
+                sed 's#"inlayHint.enable": true,#&\n   "xml.java.home": "'"$jdk_home"'",#' \
+                    "$src_file" > "$target_file"
+            else
+                cp -af "$src_file" "$target_file"
+            fi
+        else
+            cp -af "$src_file" "$target_file"
+        fi
+
+        chmod 644 "$target_file"
     }
+
     [[ -f "${src_dir}/.vimrc" ]] && cp -af "${src_dir}/.vimrc" "${HOME}/"
     [[ -d "${src_dir}/.c_cpp" ]] && {
         mkdir -p "${HOME}/.vim"
