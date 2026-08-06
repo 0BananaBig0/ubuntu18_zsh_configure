@@ -218,7 +218,7 @@ restore_terminal_config() {
     }
 }
 
-backup_dev_config() {
+backup_linux_config() {
     local dest_dir="${1:-${HOME}/configuration_file}"
 
     [[ ! -d "${dest_dir}" ]] && mkdir -p "${dest_dir}"
@@ -236,7 +236,7 @@ backup_dev_config() {
     [[ -f "${HOME}/.tessent_startup" ]] && cp -af "${HOME}/.tessent_startup" "${dest_dir}/"
 }
 
-restore_dev_config() {
+restore_linux_config() {
     local src_dir="${1:-${HOME}/configuration_file}"
 
     [[ ! -d "${src_dir}" ]] && { echo "ERROR：${src_dir} does not exist" >&2; return 1 }
