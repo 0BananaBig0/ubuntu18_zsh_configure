@@ -282,6 +282,7 @@ if [ -d "${BOSIOS}" ]; then
         for OS_PATH in ${BOSIOS}/node_modules/*; do
             add_to_multiple_env_vars "${OS_PATH}"
         done
+        add_to_env_var "PATH" "${BOSIOS}/node_modules/.bin"
     fi
 
     # Configure python3 pip install
