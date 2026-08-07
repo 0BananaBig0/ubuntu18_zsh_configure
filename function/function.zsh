@@ -221,52 +221,58 @@ restore_terminal_config() {
 # 辅助：在 /usr/lib/jvm 中找可用的 JDK 根目录
 # 优先级：目录名含 latest > 版本号最大（支持 jre-*/bin/java）
 _find_latest_jdk() {
-    # 1. 找 /usr/lib/jvm 下目录名包含 latest 的（不是固定叫 latest）
+    # 1. 找 /usr/lib/jvm 下目录名包含 latest 的
     local latest_dir
     latest_dir=$(find /usr/lib/jvm -maxdepth 1 -type d -name '*latest*' 2>/dev/null | head -1)
+
     if [[ -n "$latest_dir" ]]; then
-        # 如果是 symlink 解析真实路径，不是也直接用
-        readlink -f "$latest_dir"
+        # 只输出最终结果，不输出中间信息
+        readlink -f "$latest_dir" 2>/dev/null || echo "$latest_dir"
         return 0
     fi
 
-    # 2. 兜底：扫描所有目录，按 java 真实版本号取最大
-    local best_home="" best_ver=""
+    # 2. 兜底：扫描所有目录
     [[ ! -d /usr/lib/jvm ]] && return 1
 
-    for d in /usr/lib/jvm/*; do
-        local java_bin=""
-        if [[ -x "$d/bin/java" ]]; then
-            java_bin="$d/bin/java"
-        elif [[ -x "$d/jre/bin/java" ]]; then
-            java_bin="$d/jre/bin/java"
-        else
-            continue
-        fi
+    local best_home="" best_ver="" java_bin ver
 
-        local ver
-        ver="$("$java_bin" -version 2>&1 | head -1 | grep -oE '[0-9]+(\.[0-9]+)*' | head -1)"
+    for d in /usr/lib/jvm/*; do
+        java_bin=""
+        [[ -x "$d/bin/java" ]] && java_bin="$d/bin/java"
+        [[ -z "$java_bin" && -x "$d/jre/bin/java" ]] && java_bin="$d/jre/bin/java"
+        [[ -z "$java_bin" ]] && continue
+
+        ver=$("$java_bin" -version 2>&1 | awk '/version/{print $NF}' | tr -d '"')
         [[ -z "$ver" ]] && continue
 
-        if [[ -z "$best_ver" ]] || \
-           [[ "$(printf "%s\n%s\n" "$ver" "$best_ver" | sort -V | tail -1)" == "$ver" ]]; then
+        if [[ -z "$best_ver" ]] || [[ $(sort -V <<< "$ver"$'\n'"$best_ver" | tail -1) == "$ver" ]]; then
             best_ver="$ver"
             best_home="$d"
         fi
     done
 
-    [[ -n "$best_home" ]] && echo "$best_home" && return 0
+    # 只在最后输出一次结果
+    if [[ -n "$best_home" ]]; then
+        echo "$best_home"
+        return 0
+    fi
+
     return 1
 }
 
 # 辅助：检查当前 java 是否 >= 11
 _check_java_version() {
-    local v; v=$(java -version 2>&1 | head -1)
-    if [[ "$v" =~ ([0-9]+)\.([0-9]+) ]]; then
-        local m=${BASH_REMATCH[1]}
-        [[ "$m" == "1" ]] && m=${BASH_REMATCH[2]}
-        (( m >= 11 )) && return 0
-    fi
+    local ver_str major minor
+    ver_str=$(java -version 2>&1 | head -1)
+    # 直接用 grep -oP 提取版本号中的前两个数字
+    local ver_parts
+    ver_parts=$(echo "$ver_str" | grep -oP '\d+\.\d+')
+    [[ -z "$ver_parts" ]] && return 1
+    # 分割版本号
+    IFS='.' read -r major minor <<< "$ver_parts"
+    # Java 8 格式: 1.8 -> major=1, minor=8 -> 实际版本 8
+    [[ "$major" == "1" ]] && major=$minor
+    (( major >= 11 )) && return 0
     return 1
 }
 
