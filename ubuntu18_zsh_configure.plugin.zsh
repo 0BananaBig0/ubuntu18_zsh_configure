@@ -35,6 +35,12 @@ export GIT_EDITOR="gvim"
 
 
 
+# Configure codex
+export CODEX_HOME="${HOME}/.local/.codex_home/codex"
+alias install_codex="sh ${HOME}/.local/bin/install_codex.sh"
+
+
+
 # Set vi-mode of terminal
 VI_MODE_RESET_PROMPT_ON_MODE_CHANGE=true
 MODE_INDICATOR="%F{white}<<<%f"
