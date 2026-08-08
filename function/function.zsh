@@ -364,3 +364,29 @@ restore_linux_config() {
     }
     [[ -f "${src_dir}/.tessent_startup" ]] && cp -af "${src_dir}/.tessent_startup" "${HOME}/"
 }
+
+ensure_dracula_konsole() {
+    local target="${1:-$HOME/.local/share/konsole/Dracula.colorscheme}"
+
+    if [[ -f "$target" ]]; then
+        echo "Dracula theme already installed at: $target"
+        return 0
+    fi
+
+    echo "Dracula theme not found. Installing..."
+
+    local tmpdir
+    tmpdir=$(mktemp -d) || { echo "Failed to create temp dir" >&2; return 1; }
+
+    git clone --depth 1 https://github.com/dracula/konsole "$tmpdir/konsole" 2>/dev/null || {
+        echo "Failed to clone repository" >&2
+        rm -rf "$tmpdir"
+        return 1
+    }
+
+    mkdir -p "$(dirname "$target")"
+    mv "$tmpdir/konsole/Dracula.colorscheme" "$target"
+    rm -rf "$tmpdir"
+
+    echo "Dracula theme installed at: $target"
+}
