@@ -190,8 +190,8 @@ backup_terminal_config() {
     }
 
     [[ -d "${HOME}/.local/share/konsole" ]] && {
-        mkdir -p "${backup_dir}/konsole"
-        cp -af "${HOME}/.local/share/konsole" "${backup_dir}/konsole/share-konsole"
+        mkdir -p "${backup_dir}/konsole/share-konsole"
+        cp -af "${HOME}/.local/share/konsole/"* "${backup_dir}/konsole/share-konsole/"
     }
 }
 
@@ -214,7 +214,7 @@ restore_terminal_config() {
 
     [[ -d "${backup_dir}/konsole/share-konsole" ]] && {
         mkdir -p "${HOME}/.local/share/konsole"
-        cp -af "${backup_dir}/konsole/share-konsole/." "${HOME}/.local/share/konsole/"
+        cp -af "${backup_dir}/konsole/share-konsole/"* "${HOME}/.local/share/konsole/"
     }
 }
 
