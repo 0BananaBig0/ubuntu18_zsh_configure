@@ -143,7 +143,7 @@ export RUSTUP_DIST_SERVER="https://rsproxy.cn"
 export RUSTUP_UPDATE_ROOT="https://rsproxy.cn/rustup"
 export CARGO_HOME="${HOME}/.cargo"
 export RUSTUP_HOME="${HOME}/.rustup"
-add_to_env_var "PATH" "${HOME}/.cargo"
+add_to_env_var "PATH" "${HOME}/.cargo/bin"
 if command -v zoxide >/dev/null 2>&1;then
     eval "$(zoxide init zsh)"
 fi
