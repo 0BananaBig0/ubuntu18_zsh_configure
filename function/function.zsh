@@ -390,3 +390,18 @@ ensure_dracula_konsole() {
 
     echo "Dracula theme installed at: $target"
 }
+
+function update_codex_skills() {
+    local msg="$1"
+    cd "$codex_home/skills" || { echo "Failed to enter directory $codex_home/skills"; return 1; }
+    if [[ -z "$msg" ]]; then
+        echo "No commit message provided, only executing git pull..."
+        git pull || { echo "git pull failed"; return 1; }
+    else
+        echo "Executing full git workflow..."
+        git pull || { echo "git pull failed"; return 1; }
+        git add . || { echo "git add failed"; return 1; }
+        git commit -m "$msg" || { echo "git commit failed"; return 1; }
+        git push || { echo "git push failed"; return 1; }
+    fi
+}
