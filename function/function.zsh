@@ -10,7 +10,7 @@
 #   $1: 环境变量名称 (如 PATH, LD_LIBRARY_PATH)
 #   $2: 要添加的路径
 #   $3: 添加位置，可选值 "before" 或 "after"，默认为 "before"
-add_to_env_var() {
+function add_to_env_var() {
     local var_name="$1"
     local new_path="$2"
     local position="${3:-before}"
@@ -47,7 +47,7 @@ add_to_env_var() {
 # 使用示例：
 # add_to_env_var "PATH" "/usr/local/bin" "before"
 # add_to_env_var "LD_LIBRARY_PATH" "/opt/lib" "after"
-add_to_multiple_env_vars() {
+function add_to_multiple_env_vars() {
     local new_path="$1"
     local position="${2:-before}"
     if [[ ! -d "${new_path}" ]]; then
@@ -67,7 +67,7 @@ add_to_multiple_env_vars() {
 
 
 # Personal functions
-find_root_path() {
+function find_root_path() {
     # Step 1: Define an array of root patterns
     local root_patterns=(".git" ".hg" ".projections.json" ".project" ".svn" ".root" ".vscode" "SConstruct")
     local current_path="$PWD"
@@ -91,7 +91,7 @@ find_root_path() {
     return 1
 }
 
-check_and_copy_file() {
+function check_and_copy_file() {
     local source_path="${HOME}/.vim/.c_cpp"
     local workspace_path="$1"
     local file_name="$2"
@@ -110,7 +110,7 @@ check_and_copy_file() {
     return 1
 }
 
-configure() {
+function configure() {
     # Argument: $1 (could be clang, vscode, vimspector, dbg, all or "")
     local action="$1"
     local recursive="$2"
@@ -170,7 +170,7 @@ configure() {
 
 
 
-backup_terminal_config() {
+function backup_terminal_config() {
     local base_dir="${1:-${HOME}/configuration_file}"
     local qt_version="${2:-$(ldd "$(command -v konsole)" 2>/dev/null | grep -oE 'libQt[56]Core\.so' | head -1)}"
     qt_version="${qt_version#libQt}"; qt_version="${qt_version%Core.so}"
@@ -195,7 +195,7 @@ backup_terminal_config() {
     }
 }
 
-restore_terminal_config() {
+function restore_terminal_config() {
     local base_dir="${1:-${HOME}/configuration_file}"
     local qt_version="${2:-$(ldd "$(command -v konsole)" 2>/dev/null | grep -oE 'libQt[56]Core\.so' | head -1)}"
     qt_version="${qt_version#libQt}"; qt_version="${qt_version%Core.so}"
@@ -220,7 +220,7 @@ restore_terminal_config() {
 
 # 辅助：在 /usr/lib/jvm 中找可用的 JDK 根目录
 # 优先级：目录名含 latest > 版本号最大（支持 jre-*/bin/java）
-_find_latest_jdk() {
+function _find_latest_jdk() {
     # 1. 找 /usr/lib/jvm 下目录名包含 latest 的
     local latest_dir
     latest_dir=$(find /usr/lib/jvm -maxdepth 1 -type d -name '*latest*' 2>/dev/null | head -1)
@@ -261,7 +261,7 @@ _find_latest_jdk() {
 }
 
 # 辅助：检查当前 java 是否 >= 11
-_check_java_version() {
+function _check_java_version() {
     local ver_str major minor
     ver_str=$(java -version 2>&1 | head -1)
     # 直接用 grep -oP 提取版本号中的前两个数字
@@ -276,7 +276,7 @@ _check_java_version() {
     return 1
 }
 
-backup_linux_config() {
+function backup_linux_config() {
     local dest_dir="${1:-${HOME}/configuration_file}"
 
     [[ ! -d "${dest_dir}" ]] && mkdir -p "${dest_dir}"
@@ -297,7 +297,7 @@ backup_linux_config() {
     [[ -f "${HOME}/.tessent_startup" ]] && cp -af "${HOME}/.tessent_startup" "${dest_dir}/"
 }
 
-restore_linux_config() {
+function restore_linux_config() {
     local src_dir="${1:-${HOME}/configuration_file}"
 
     [[ ! -d "${src_dir}" ]] && { echo "ERROR：${src_dir} does not exist" >&2; return 1 }
@@ -365,7 +365,7 @@ restore_linux_config() {
     [[ -f "${src_dir}/.tessent_startup" ]] && cp -af "${src_dir}/.tessent_startup" "${HOME}/"
 }
 
-ensure_dracula_konsole() {
+function ensure_dracula_konsole() {
     local target="${1:-$HOME/.local/share/konsole/Dracula.colorscheme}"
 
     if [[ -f "$target" ]]; then
@@ -413,7 +413,7 @@ function update_codex_skills() {
     return $?
 }
 
-is_remote_ssh() {
+function is_remote_ssh() {
     # 1. 必须存在 SSH_CONNECTION 变量（SSH 会话的标志）
     [[ -z "$SSH_CONNECTION" ]] && return 1
 
