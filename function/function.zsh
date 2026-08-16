@@ -393,17 +393,24 @@ ensure_dracula_konsole() {
 
 function update_codex_skills() {
     local msg="$1"
-    cd "$codex_home/skills" || { echo "Failed to enter directory $codex_home/skills"; return 1; }
-    if [[ -z "$msg" ]]; then
-        echo "No commit message provided, only executing git pull..."
-        git pull || { echo "git pull failed"; return 1; }
-    else
-        echo "Executing full git workflow..."
-        git pull || { echo "git pull failed"; return 1; }
-        git add . || { echo "git add failed"; return 1; }
-        git commit -m "$msg" || { echo "git commit failed"; return 1; }
-        git push || { echo "git push failed"; return 1; }
-    fi
+    (
+        cd "${CODEX_HOME}/skills" || { echo "Failed to enter directory ${CODEX_HOME}/skills"; exit 1; }
+        if [[ -z "$msg" ]]; then
+            echo "No commit message provided, only executing git pull..."
+        else
+            # 检查是否有变化
+            echo "Executing full git workflow..."
+            if ! git status --porcelain | grep -q .; then
+                echo "No changes detected. Skipping add/commit/push."
+                exit 0
+            fi
+            git add . || { echo "git add failed"; exit 1; }
+            git commit -m "$msg" || { echo "git commit failed"; exit 1; }
+            git pull || { echo "git pull failed"; exit 1; }
+            git push || { echo "git push failed"; exit 1; }
+        fi
+    )
+    return $?
 }
 
 is_remote_ssh() {
