@@ -405,3 +405,24 @@ function update_codex_skills() {
         git push || { echo "git push failed"; return 1; }
     fi
 }
+
+is_remote_ssh() {
+    # 1. 必须存在 SSH_CONNECTION 变量（SSH 会话的标志）
+    [[ -z "$SSH_CONNECTION" ]] && return 1
+
+    # 2. 提取客户端 IP（第一个字段）
+    local client_ip="${SSH_CONNECTION%% *}"
+
+    # 3. 去除可能的 IPv6 作用域（如 fe80::1%eth0 -> fe80::1）
+    client_ip="${client_ip%\%*}"
+
+    # 4. 检查是否为本地回环地址
+    case "$client_ip" in
+        127.0.0.1|::1|localhost|127.*)
+            return 1  # 本地连接
+            ;;
+        *)
+            return 0  # 远程连接
+            ;;
+    esac
+}

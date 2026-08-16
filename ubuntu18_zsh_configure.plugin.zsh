@@ -152,7 +152,11 @@ fi
 
 # Support wsl2 gui applications
 if grep -q WSL2 /proc/version; then
-    export DISPLAY=:0
+    if is_remote_ssh; then
+        export DISPLAY=localhost:10.0
+    else
+        export DISPLAY=:0
+    fi
     # For wsl2 vscode
     export DONT_PROMPT_WSL_INSTALL=1
     # Disable Wayland
