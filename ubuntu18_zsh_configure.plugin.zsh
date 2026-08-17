@@ -38,7 +38,8 @@ export GIT_EDITOR="gvim"
 # Configure codex
 export CODEX_HOME="${HOME}/.local/.codex_home/codex"
 alias install_codex="sh ${HOME}/.local/bin/install_codex.sh"
-
+export VISUAL="gvim -f"
+export EDITOR="gvim -f"
 
 
 # Set vi-mode of terminal
