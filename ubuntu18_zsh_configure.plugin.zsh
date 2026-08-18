@@ -164,7 +164,7 @@ if grep -q WSL2 /proc/version; then
     export GDK_BACKEND=x11
     unset WAYLAND_DISPLAY
     # To resolve dbind-WARNING **: 17:16:19.076: Couldn't connect to accessibility bus: Failed to connect to socket /tmp/dbus-ly00ASJWzY: Connection refused
-    export AT_SPI_BUS_ADDRESS="unix:path=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/at-spi/bus"
+    export NO_AT_BRIDGE=1
 fi
 
 
