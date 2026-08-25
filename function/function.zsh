@@ -433,3 +433,70 @@ function is_remote_ssh() {
             ;;
     esac
 }
+
+# Ensure that [tui] section in Codex config.toml contains vim_mode_default = true
+# Usage: ensure_codex_vim [config_path]
+# If no argument given, defaults to ${CODEX_HOME}/config.toml
+function ensure_codex_vim() {
+    local config="${1:-${CODEX_HOME}/config.toml}"
+
+    # If file does not exist, create it with the desired config
+    if [[ ! -f "$config" ]]; then
+        mkdir -p "$(dirname "$config")"
+        cat > "$config" <<-'EOF'
+[tui]
+vim_mode_default = true
+EOF
+        echo "[OK] Created $config with default vim setting"
+        return 0
+    fi
+
+    # Use awk to perform section-aware check and modification
+    awk '
+    BEGIN { tui_found = 0; vim_found = 0; in_tui = 0 }
+    /^\[.*\]$/ {
+        if ($0 == "[tui]") {
+            tui_found = 1
+            in_tui = 1
+            print $0
+            next
+        } else {
+            if (in_tui && !vim_found) {
+                # Leaving [tui] section without finding vim_mode_default -> append at end of section
+                print "vim_mode_default = true"
+                vim_found = 1
+            }
+            in_tui = 0
+        }
+        print $0
+        next
+    }
+    in_tui && /^\s*vim_mode_default\s*=/ {
+        vim_found = 1
+        print $0
+        next
+    }
+    { print $0 }
+    END {
+        if (!tui_found) {
+            print "[tui]"
+            print "vim_mode_default = true"
+        } else if (in_tui && !vim_found) {
+            # File ends exactly inside [tui] section without closing bracket
+            print "vim_mode_default = true"
+        }
+    }
+    ' "$config" > "${config}.tmp" && mv "${config}.tmp" "$config"
+
+    echo "[OK] Configuration updated (if needed)"
+}
+
+function restore_stable_configuration() {
+    ensure_codex_vim
+    git config --global user.name ${GIT_AUTHOR_NAME}
+    git config --global user.email ${GIT_AUTHOR_EMAIL}
+    git config --global alias.logline "log --graph --abbrev-commit"
+    git config --global core.editor gvim
+    git config --global protocol.https.allow always
+    git config --global push.default "current"
+}
