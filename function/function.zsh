@@ -434,7 +434,10 @@ function is_remote_ssh() {
     esac
 }
 
-# Ensure that [tui] section in Codex config.toml contains vim_mode_default = true
+# Ensure that [tui] section in Codex config.toml contains:
+#   vim_mode_default = true
+#   vim_mode_initial_state = "insert"
+#   vim_mode_after_submit = "insert"
 # Usage: ensure_codex_vim [config_path]
 # If no argument given, defaults to ${CODEX_HOME}/config.toml
 function ensure_codex_vim() {
@@ -446,14 +449,22 @@ function ensure_codex_vim() {
         cat > "$config" <<-'EOF'
 [tui]
 vim_mode_default = true
+vim_mode_initial_state = "insert"
+vim_mode_after_submit = "insert"
 EOF
-        echo "[OK] Created $config with default vim setting"
+        echo "[OK] Created $config with default vim settings"
         return 0
     fi
 
     # Use awk to perform section-aware check and modification
     awk '
-    BEGIN { tui_found = 0; vim_found = 0; in_tui = 0 }
+    BEGIN {
+        tui_found = 0
+        in_tui = 0
+        has_default = 0
+        has_initial = 0
+        has_after = 0
+    }
     /^\[.*\]$/ {
         if ($0 == "[tui]") {
             tui_found = 1
@@ -461,18 +472,29 @@ EOF
             print $0
             next
         } else {
-            if (in_tui && !vim_found) {
-                # Leaving [tui] section without finding vim_mode_default -> append at end of section
-                print "vim_mode_default = true"
-                vim_found = 1
+            if (in_tui) {
+                # Leaving [tui] section: append missing keys
+                if (!has_default) print "vim_mode_default = true"
+                if (!has_initial) print "vim_mode_initial_state = \"insert\""
+                if (!has_after) print "vim_mode_after_submit = \"insert\""
             }
             in_tui = 0
         }
         print $0
         next
     }
-    in_tui && /^\s*vim_mode_default\s*=/ {
-        vim_found = 1
+    in_tui && /^\s*vim_mode_default\s*=\s*true\s*$/ {
+        has_default = 1
+        print $0
+        next
+    }
+    in_tui && /^\s*vim_mode_initial_state\s*=\s*"insert"\s*$/ {
+        has_initial = 1
+        print $0
+        next
+    }
+    in_tui && /^\s*vim_mode_after_submit\s*=\s*"insert"\s*$/ {
+        has_after = 1
         print $0
         next
     }
@@ -481,9 +503,13 @@ EOF
         if (!tui_found) {
             print "[tui]"
             print "vim_mode_default = true"
-        } else if (in_tui && !vim_found) {
-            # File ends exactly inside [tui] section without closing bracket
-            print "vim_mode_default = true"
+            print "vim_mode_initial_state = \"insert\""
+            print "vim_mode_after_submit = \"insert\""
+        } else if (in_tui) {
+            # File ends inside [tui] section
+            if (!has_default) print "vim_mode_default = true"
+            if (!has_initial) print "vim_mode_initial_state = \"insert\""
+            if (!has_after) print "vim_mode_after_submit = \"insert\""
         }
     }
     ' "$config" > "${config}.tmp" && mv "${config}.tmp" "$config"
