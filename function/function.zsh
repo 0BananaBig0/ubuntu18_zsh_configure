@@ -518,7 +518,6 @@ EOF
 }
 
 function restore_stable_configuration() {
-    ensure_codex_vim
     git config --global user.name ${GIT_AUTHOR_NAME}
     git config --global user.email ${GIT_AUTHOR_EMAIL}
     git config --global alias.logline "log --graph --abbrev-commit"
