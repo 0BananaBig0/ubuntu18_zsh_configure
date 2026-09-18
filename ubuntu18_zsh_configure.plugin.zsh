@@ -37,6 +37,7 @@ export GIT_EDITOR="gvim"
 
 # Configure codex
 export CODEX_HOME="${HOME}/.local/.codex_home/codex"
+export CLAUDE_CONFIG_DIR="${HOME}/.local/.codex_home/claude"
 alias install_codex="sh ${HOME}/.local/bin/install_codex.sh"
 export VISUAL="gvim -f"
 export EDITOR="gvim -f"
