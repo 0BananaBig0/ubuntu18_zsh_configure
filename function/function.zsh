@@ -525,3 +525,60 @@ function restore_stable_configuration() {
     git config --global protocol.https.allow always
     git config --global push.default "current"
 }
+
+function scodex() {
+    local codex_home="${CODEX_HOME:-$HOME/.codex}"
+    local config="${codex_home}/config.toml"
+    local current
+    local choice
+
+    if [ ! -f "$config" ]; then
+        echo "Error: config file not found: $config" >&2
+        return 1
+    fi
+
+    # Detect current mode
+    if grep -q '^model_provider[[:space:]]*=[[:space:]]*"custom"[[:space:]]*$' "$config"; then
+        current="token"
+    elif grep -q '^#[[:space:]]*model_provider[[:space:]]*=[[:space:]]*"custom"[[:space:]]*$' "$config"; then
+        current="account"
+    else
+        echo 'Error: cannot find model_provider = "custom" in:' >&2
+        echo "  $config" >&2
+        return 1
+    fi
+
+    echo
+    echo "Current Codex mode: $current"
+    echo
+    echo "  1 / t) token"
+    echo "  2 / a) account"
+    echo "  Enter) keep current mode ($current)"
+    echo
+
+    printf "Select [1/2/t/a/Enter]: "
+    IFS= read -r choice
+
+    case "$choice" in
+        "")
+            echo "Using $current"
+            ;;
+
+        1|t|T|token|Token|TOKEN)
+            sed -i 's/^#[[:space:]]*model_provider[[:space:]]*=[[:space:]]*"custom"[[:space:]]*$/model_provider = "custom"/' "$config"
+            echo "Using token"
+            ;;
+
+        2|a|A|account|Account|ACCOUNT)
+            sed -i 's/^model_provider[[:space:]]*=[[:space:]]*"custom"[[:space:]]*$/# model_provider = "custom"/' "$config"
+            echo "Using account"
+            ;;
+
+        *)
+            echo "Invalid selection: $choice" >&2
+            return 1
+            ;;
+    esac
+
+    command codex "$@"
+}
