@@ -413,6 +413,15 @@ function update_codex_skills() {
     return $?
 }
 
+function status_codex_skills() {
+    local msg="$1"
+    (
+        cd "${CODEX_HOME}/skills" || { echo "Failed to enter directory ${CODEX_HOME}/skills"; exit 1; }
+        git status
+    )
+    return $?
+}
+
 function is_remote_ssh() {
     # 1. 必须存在 SSH_CONNECTION 变量（SSH 会话的标志）
     [[ -z "$SSH_CONNECTION" ]] && return 1
