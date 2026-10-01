@@ -393,20 +393,51 @@ function ensure_dracula_konsole() {
 
 function update_codex_skills() {
     local msg="$1"
+    local repo_url="git@gitee.com:banana33/skills.git"
     (
-        cd "${CODEX_HOME}/skills" || { echo "Failed to enter directory ${CODEX_HOME}/skills"; exit 1; }
-        if [[ -z "$msg" ]]; then
-            echo "No commit message provided, only executing git pull..."
+        # Ensure the parent directory exists
+        mkdir -p "${CODEX_HOME}" || { echo "Failed to create ${CODEX_HOME}"; exit 1; }
+        # Case 1: skills directory does not exist at all → just clone directly
+        if [[ ! -d "${CODEX_HOME}/skills" ]]; then
+            echo "Skills directory does not exist. Cloning repository..."
+            git clone "$repo_url" "${CODEX_HOME}/skills" || { echo "git clone failed"; exit 1; }
+            cd "${CODEX_HOME}/skills" || exit 1
         else
-            # 检查是否有变化
+            cd "${CODEX_HOME}/skills" || exit 1
+            # Case 2: skills directory exists but is NOT a git repository
+            if ! git rev-parse --git-dir >/dev/null 2>&1; then
+                echo "Skills directory exists but is not a git repo. Initializing..."
+                # Clone into a temp directory first (git clone won't overwrite non-empty dirs)
+                local tmpdir
+                tmpdir="$(mktemp -d)" || { echo "Failed to create temp dir"; exit 1; }
+                git clone "$repo_url" "$tmpdir" || { echo "git clone failed"; exit 1; }
+                # Move .git into the existing skills directory
+                mv "$tmpdir/.git" . || { echo "Failed to move .git"; exit 1; }
+                # Restore tracked files (overwrites local files with repo versions)
+                git checkout -- . 2>/dev/null
+                # Clean up temp directory
+                rm -rf "$tmpdir"
+                echo "Repository initialized successfully."
+            fi
+            # Case 3: already a git repo → fall through to normal workflow below
+        fi
+        # --- From this point, skills/ is guaranteed to be a git repository ---
+        if [[ -z "$msg" ]]; then
+            # No commit message → only pull the latest changes
+            echo "No commit message provided, only executing git pull..."
+            git pull || { echo "git pull failed"; exit 1; }
+        else
+            # Full workflow: add → commit → pull --rebase → push
             echo "Executing full git workflow..."
+            # Check if there are any changes to commit
             if ! git status --porcelain | grep -q .; then
-                echo "No changes detected. Skipping add/commit/push."
+                echo "No changes detected. Skipping add/commit."
+                git pull || { echo "git pull failed"; exit 1; }
                 exit 0
             fi
             git add . || { echo "git add failed"; exit 1; }
             git commit -m "$msg" || { echo "git commit failed"; exit 1; }
-            git pull || { echo "git pull failed"; exit 1; }
+            git pull --rebase || { echo "git pull failed"; exit 1; }
             git push || { echo "git push failed"; exit 1; }
         fi
     )
