@@ -20,8 +20,19 @@ function add_to_env_var() {
         return 1
     fi
 
+    case "$position" in
+        before|前面|前|after|后面|后) ;;
+        *) return 1 ;;
+    esac
+
     # zsh 原生间接引用方式
     local current_value="${(P)var_name}"
+
+    # 已存在的路径不重复添加，也不改变已有顺序
+    if [[ ":$current_value:" == *":$new_path:"* ]]; then
+        export "$var_name=$current_value"
+        return 0
+    fi
 
     # 判断环境变量是否为空
     if [[ -z "$current_value" ]]; then
@@ -36,9 +47,6 @@ function add_to_env_var() {
             ;;
         after|后面|后)
             export "$var_name=$current_value:$new_path"
-            ;;
-        *)
-            return 1
             ;;
     esac
 
@@ -82,7 +90,7 @@ function find_root_path() {
             fi
         done
         # Move to the parent directory
-        current_path=$(dirname "$current_path")
+        current_path="${current_path:h}"
     done
 
     # Step 3: If no match, return the current path and echo a message

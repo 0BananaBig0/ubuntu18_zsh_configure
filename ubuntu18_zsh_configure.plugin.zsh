@@ -192,7 +192,7 @@ fi
 if [ -d ${HOME}/.Qt6 ]; then
     export Qt6_DIR=${HOME}/.Qt6   # Replace with your Qt install path
     add_to_env_var "PATH" "${Qt6_DIR}/Tools/QtCreator/bin"
-    for dir in $Qt6_DIR/*/gcc_64; do
+    for dir in "$Qt6_DIR"/*/gcc_64(-/N); do
         # Affect not only gcc default options but also g++ default options; Always -I all path listed in C_INCLUDE_PATH
         add_to_multiple_env_vars "${dir}"
         add_to_env_var "CMAKE_PREFIX_PATH" "${dir}/lib/cmake"
@@ -216,7 +216,7 @@ if [[ -d /EDA/Mentor ]]; then
     add_to_env_var "QUESTA_HOME" "${Mentor_Dir}/questasim"
     add_to_env_var "TESSENT_HOME" "${Mentor_Dir}/tessent"
     add_to_env_var "OASYS_HOME" "${Mentor_Dir}/oasys"
-    for dir in $Mentor_Dir/^(*[0-9]*)/bin; do
+    for dir in "$Mentor_Dir"/^(*[0-9]*)/bin(-/N); do
         add_to_env_var "PATH" "${dir}"
     done
 fi
@@ -246,7 +246,7 @@ if [[ -d /EDA/Synopsys ]]; then
         export SCL_HOME=$Synopsys_Dir/scl/scl
         alias load_syn="$SCL_HOME/linux64/bin/lmgrd -c $SNPSLMD_LICENSE_FILE -l /tmp/syn.debug.log"
     fi
-    for dir in $Synopsys_Dir/^(*[0-9]*)/^(*[0-9]*)/bin; do
+    for dir in "$Synopsys_Dir"/^(*[0-9]*)/^(*[0-9]*)/bin(-/N); do
         [[ -d "$dir" && ":$PATH:" != *":$dir:"* ]] && PATH="$dir:$PATH"
     done
 fi
@@ -254,7 +254,7 @@ fi
 
 
 # Alias pip3
-for dir in ${HOME}/.local/lib/python3*/site-packages; do
+for dir in "${HOME}"/.local/lib/python3*/site-packages(-/N); do
     if [[ -d $dir/pip ]]; then
         alias pip='python3 -m pip'
         alias pip3='python3 -m pip'
@@ -283,18 +283,21 @@ if [ -d "${BOSIOS}" ]; then
         [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
         [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
         # 获取所有版本目录，按版本号排序，取最新的
-        LATEST_VERSION=$(ls -d ${BOSIOS}/nvm/versions/node/*/ | sort -V | tail -1 | xargs basename)
-        NODE_PATH="${BOSIOS}/nvm/versions/node/${LATEST_VERSION}"
-        if [ -n "$LATEST_VERSION" ]; then
-            NODE_PATH="${NVM_DIR}/${LATEST_VERSION}"
+        node_versions=("${NVM_DIR}"/versions/node/*(-/Nn))
+        LATEST_VERSION=""
+        NODE_PATH=""
+        if (( ${#node_versions} )); then
+            NODE_PATH="${node_versions[-1]}"
+            LATEST_VERSION="${NODE_PATH:t}"
             add_to_multiple_env_vars "${NODE_PATH}"
         fi
+        unset node_versions
     fi
-    for OS_PATH in ${BOSIOS}/*; do
+    for OS_PATH in "${BOSIOS}"/*(-/N); do
         add_to_multiple_env_vars "${OS_PATH}"
     done
     if [ -d "${BOSIOS}/node_modules" ]; then
-        for OS_PATH in ${BOSIOS}/node_modules/*; do
+        for OS_PATH in "${BOSIOS}"/node_modules/*(-/N); do
             add_to_multiple_env_vars "${OS_PATH}"
         done
         add_to_env_var "PATH" "${BOSIOS}/node_modules/.bin"
