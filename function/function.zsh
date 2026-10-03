@@ -109,71 +109,56 @@ function check_and_copy_file() {
         echo "File $workspace_path/$file_name has existed."
     elif [[ -e "$source_path/$file_name" ]]; then
         # If the file exists in the specific path, copy it to the current workspace
-        cp "$source_path/$file_name" "$workspace_path/$file_name"
+        mkdir -p -- "$workspace_path/${file_name:h}" || return 1
+        cp -- "$source_path/$file_name" "$workspace_path/$file_name" || return 1
     else
         # If the file doesn't exist in either location
-        echo "Warning: File $source_path/$file_name and $workspace_path/$file_name file do not exist."
-        return 0
+        echo "Warning: File $source_path/$file_name and $workspace_path/$file_name file do not exist." >&2
+        return 1
     fi
-    return 1
+    return 0
 }
 
 function configure() {
-    # Argument: $1 (could be clang, vscode, vimspector, dbg, all or "")
+    emulate -L zsh
     local action="$1"
-    local recursive="$2"
-    # Only created and assigned once, a global var
-    if [ -z "$workspace_path" ]; then
-        workspace_path=$(find_root_path)
-    fi
-
+    local workspace_path file
+    local -a files
     case "$action" in
         clang)
-            check_and_copy_file $workspace_path ".clangd"
-            check_and_copy_file $workspace_path ".clang-format"
-            check_and_copy_file $workspace_path ".clang-tidy"
-            if [[ $recursive -eq 1 ]]; then
-              return 1
-            fi
+            files=(.clangd .clang-format .clang-tidy)
             ;;
         vscode)
-            if [[ ! -d "$workspace_path/.vscode" ]]; then
-              mkdir "$workspace_path/.vscode"
-            fi
-            check_and_copy_file $workspace_path ".vscode/launch.json"
-            if [[ $recursive -eq 1 ]]; then
-              return 1
-            fi
+            files=(.vscode/launch.json)
             ;;
         vimspector)
-            check_and_copy_file $workspace_path ".vimspector.json"
-            local result=$?
-            if [[ $result -eq 1 ]]; then
-              gvim "$workspace_path/.vimspector.json"
-            fi
-            if [[ $recursive -eq 1 ]]; then
-              return 1
-            fi
+            files=(.vimspector.json)
             ;;
         dbg)
-            configure vscode 1
-            configure vimspector 1
+            files=(.vscode/launch.json .vimspector.json)
             ;;
         all)
-            configure clang 1
-            configure dbg 1
+            files=(.clangd .clang-format .clang-tidy .vscode/launch.json .vimspector.json)
             ;;
         "")
-            configure clang 1
-            configure vimspector 1
+            files=(.clangd .clang-format .clang-tidy .vimspector.json)
             ;;
         *)
-            echo "Invalid argument: '$action'. Please specify clang, vscode, vimspector, dbg, all or \"\"."
-            return 0
+            echo "Invalid argument: '$action'. Please specify clang, vscode, vimspector, dbg, all or \"\"." >&2
+            return 1
             ;;
     esac
-    unset workspace_path
-    return 1
+
+    # find_root_path 在未找到项目标记时仍输出当前目录，保留这个回退行为
+    workspace_path=$(find_root_path)
+    [[ -d "$workspace_path" ]] || return 1
+    for file in "${files[@]}"; do
+        check_and_copy_file "$workspace_path" "$file" || return 1
+    done
+    if [[ "${files[-1]}" == .vimspector.json ]]; then
+        gvim "$workspace_path/.vimspector.json" || return 1
+    fi
+    return 0
 }
 
 
@@ -185,22 +170,23 @@ function backup_terminal_config() {
     local backup_dir="${base_dir}/terminal_backup_Qt_${qt_version}"
 
     [[ ! -d "${base_dir}" ]] && { echo "ERROR：${base_dir} does not exist" >&2; return 1 }
-    mkdir -p "${backup_dir}"
+    mkdir -p "${backup_dir}" || return 1
 
     [[ -f "${HOME}/.config/terminator/config" ]] && {
-        mkdir -p "${backup_dir}/terminator"
-        cp -af "${HOME}/.config/terminator/config" "${backup_dir}/terminator/"
+        mkdir -p "${backup_dir}/terminator" || return 1
+        cp -af "${HOME}/.config/terminator/config" "${backup_dir}/terminator/" || return 1
     }
 
     [[ -f "${HOME}/.config/konsolerc" ]] && {
-        mkdir -p "${backup_dir}/konsole"
-        cp -af "${HOME}/.config/konsolerc" "${backup_dir}/konsole/"
+        mkdir -p "${backup_dir}/konsole" || return 1
+        cp -af "${HOME}/.config/konsolerc" "${backup_dir}/konsole/" || return 1
     }
 
     [[ -d "${HOME}/.local/share/konsole" ]] && {
-        mkdir -p "${backup_dir}/konsole/share-konsole"
-        cp -af "${HOME}/.local/share/konsole/"* "${backup_dir}/konsole/share-konsole/"
+        mkdir -p "${backup_dir}/konsole/share-konsole" || return 1
+        cp -af "${HOME}/.local/share/konsole/." "${backup_dir}/konsole/share-konsole/" || return 1
     }
+    return 0
 }
 
 function restore_terminal_config() {
@@ -212,18 +198,20 @@ function restore_terminal_config() {
     [[ ! -d "${backup_dir}" ]] && { echo "ERROR：${backup_dir} does not exist" >&2; return 1 }
 
     [[ -f "${backup_dir}/terminator/config" ]] && {
-        mkdir -p "${HOME}/.config/terminator"
-        cp -af "${backup_dir}/terminator/config" "${HOME}/.config/terminator/"
+        mkdir -p "${HOME}/.config/terminator" || return 1
+        cp -af "${backup_dir}/terminator/config" "${HOME}/.config/terminator/" || return 1
     }
 
     [[ -f "${backup_dir}/konsole/konsolerc" ]] && {
-        cp -af "${backup_dir}/konsole/konsolerc" "${HOME}/.config/"
+        mkdir -p "${HOME}/.config" || return 1
+        cp -af "${backup_dir}/konsole/konsolerc" "${HOME}/.config/" || return 1
     }
 
     [[ -d "${backup_dir}/konsole/share-konsole" ]] && {
-        mkdir -p "${HOME}/.local/share/konsole"
-        cp -af "${backup_dir}/konsole/share-konsole/"* "${HOME}/.local/share/konsole/"
+        mkdir -p "${HOME}/.local/share/konsole" || return 1
+        cp -af "${backup_dir}/konsole/share-konsole/." "${HOME}/.local/share/konsole/" || return 1
     }
+    return 0
 }
 
 # 提取 java -version 中的版本字符串，保留更新号和构建后缀
@@ -288,22 +276,43 @@ function _check_java_version() {
 function backup_linux_config() {
     local dest_dir="${1:-${HOME}/configuration_file}"
 
-    [[ ! -d "${dest_dir}" ]] && mkdir -p "${dest_dir}"
+    if [[ ! -d "${dest_dir}" ]]; then
+        mkdir -p "${dest_dir}" || return 1
+    fi
 
     [[ -f "${HOME}/.gdbinit" ]] && {
         # 把所有 gcc 相关路径替换为统一占位符
-        sed 's|sys\.path\.insert(0, '\''/[^'\'']*gcc[^'\'']*/python'\'')|sys.path.insert(0, '\''__GCC_PYTHON_PATH__'\'')|g' "${HOME}/.gdbinit" > "${dest_dir}/.gdbinit"
+        sed 's|sys\.path\.insert(0, '\''/[^'\'']*gcc[^'\'']*/python'\'')|sys.path.insert(0, '\''__GCC_PYTHON_PATH__'\'')|g' "${HOME}/.gdbinit" > "${dest_dir}/.gdbinit" || return 1
     }
 
     [[ -f "${HOME}/.vim/coc-settings.json" ]] && {
-        sed '/"xml\.java\.home"/d' "${HOME}/.vim/coc-settings.json" > "${dest_dir}/coc-settings.json"
+        sed '/"xml\.java\.home"/d' "${HOME}/.vim/coc-settings.json" > "${dest_dir}/coc-settings.json" || return 1
     }
-    [[ -f "${HOME}/.vimrc" ]] && cp -af "${HOME}/.vimrc" "${dest_dir}/"
-    [[ -d "${HOME}/.vim/.c_cpp" ]] && cp -af "${HOME}/.vim/.c_cpp" "${dest_dir}/"
-    [[ -f "${HOME}/.zshrc" ]] && cp -af "${HOME}/.zshrc" "${dest_dir}/"
-    [[ -f "${HOME}/.oh-my-zsh/custom/ys_modified.zsh-theme" ]] && cp -af "${HOME}/.oh-my-zsh/custom/ys_modified.zsh-theme" "${dest_dir}/"
-    [[ -f "${HOME}/.config/nvim/init.vim" ]] && cp -af "${HOME}/.config/nvim/init.vim" "${dest_dir}/"
-    [[ -f "${HOME}/.tessent_startup" ]] && cp -af "${HOME}/.tessent_startup" "${dest_dir}/"
+    [[ -f "${HOME}/.vimrc" ]] && { cp -af "${HOME}/.vimrc" "${dest_dir}/" || return 1; }
+    [[ -d "${HOME}/.vim/.c_cpp" ]] && { cp -af "${HOME}/.vim/.c_cpp" "${dest_dir}/" || return 1; }
+    [[ -f "${HOME}/.zshrc" ]] && { cp -af "${HOME}/.zshrc" "${dest_dir}/" || return 1; }
+    [[ -f "${HOME}/.oh-my-zsh/custom/ys_modified.zsh-theme" ]] && { cp -af "${HOME}/.oh-my-zsh/custom/ys_modified.zsh-theme" "${dest_dir}/" || return 1; }
+    [[ -f "${HOME}/.config/nvim/init.vim" ]] && { cp -af "${HOME}/.config/nvim/init.vim" "${dest_dir}/" || return 1; }
+    [[ -f "${HOME}/.tessent_startup" ]] && { cp -af "${HOME}/.tessent_startup" "${dest_dir}/" || return 1; }
+    return 0
+}
+
+# 优先检查标准 GCC 布局，非标准安装保留原来的 find 回退
+function _find_gcc_python_path() {
+    emulate -L zsh
+    local printer_path fallback_path
+    for printer_path in /usr/share/gcc*/python/libstdcxx/v6/printers.py(-.NoN); do
+        print -r -- "${printer_path%/libstdcxx/v6/printers.py}"
+        return 0
+    done
+    printer_path=$(find /usr/share -path '*/libstdcxx/v6/printers.py' 2>/dev/null | head -1)
+    if [[ -n "$printer_path" ]]; then
+        print -r -- "${printer_path%/libstdcxx/v6/printers.py}"
+        return 0
+    fi
+    fallback_path=$(find /usr/share -maxdepth 4 -type d -name 'python' -path '*/gcc*' 2>/dev/null | head -1)
+    [[ -n "$fallback_path" ]] || return 1
+    print -r -- "$fallback_path"
 }
 
 function restore_linux_config() {
@@ -312,66 +321,52 @@ function restore_linux_config() {
     [[ ! -d "${src_dir}" ]] && { echo "ERROR：${src_dir} does not exist" >&2; return 1 }
 
     [[ -f "${src_dir}/.gdbinit" ]] && {
-        # 通过 printers.py 找到 gcc python 路径
-        local printer_path
-        printer_path=$(find /usr/share -path '*/libstdcxx/v6/printers.py' 2>/dev/null | head -1)
-
-        if [[ -n "${printer_path}" ]]; then
-            # 截取 printers.py 前面的 python 目录路径
-            # 例如：/usr/share/gcc-12/python/libstdcxx/v6/printers.py
-            # 截取后：/usr/share/gcc-12/python
-            local gcc_python_path="${printer_path%/libstdcxx/v6/printers.py}"
-
-            sed "s|__GCC_PYTHON_PATH__|${gcc_python_path}|g" "${src_dir}/.gdbinit" > "${HOME}/.gdbinit"
+        local gcc_python_path
+        gcc_python_path=$(_find_gcc_python_path)
+        if [[ -n "${gcc_python_path}" ]]; then
+            sed "s|__GCC_PYTHON_PATH__|${gcc_python_path}|g" "${src_dir}/.gdbinit" > "${HOME}/.gdbinit" || return 1
         else
-            # 备用：直接找 gcc python 目录
-            local fallback_path
-            fallback_path=$(find /usr/share -maxdepth 4 -type d -name 'python' -path '*/gcc*' 2>/dev/null | head -1)
-
-            if [[ -n "${fallback_path}" ]]; then
-                sed "s|__GCC_PYTHON_PATH__|${fallback_path}|g" "${src_dir}/.gdbinit" > "${HOME}/.gdbinit"
-            else
-                cp -af "${src_dir}/.gdbinit" "${HOME}/"
-                echo "Warning: Could not find GCC python path, using default .gdbinit" >&2
-            fi
+            cp -af "${src_dir}/.gdbinit" "${HOME}/" || return 1
+            echo "Warning: Could not find GCC python path, using default .gdbinit" >&2
         fi
     }
 
     [[ -f "${src_dir}/coc-settings.json" ]] && {
-        mkdir -p "${HOME}/.vim"
-        local target_file="${HOME}/.vim/coc-settings.json"
+        mkdir -p "${HOME}/.vim" || return 1
+        local target_file="${HOME}/.vim/coc-settings.json" jdk_home
         local src_file="${src_dir}/coc-settings.json"
 
         if ! _check_java_version; then
             jdk_home=$(_find_latest_jdk)
             if [[ -n "$jdk_home" ]]; then
                 sed 's#"inlayHint.enable": true,#&\n   "xml.java.home": "'"$jdk_home"'",#' \
-                    "$src_file" > "$target_file"
+                    "$src_file" > "$target_file" || return 1
             else
-                cp -af "$src_file" "$target_file"
+                cp -af "$src_file" "$target_file" || return 1
             fi
         else
-            cp -af "$src_file" "$target_file"
+            cp -af "$src_file" "$target_file" || return 1
         fi
 
-        chmod 644 "$target_file"
+        chmod 644 "$target_file" || return 1
     }
 
-    [[ -f "${src_dir}/.vimrc" ]] && cp -af "${src_dir}/.vimrc" "${HOME}/"
+    [[ -f "${src_dir}/.vimrc" ]] && { cp -af "${src_dir}/.vimrc" "${HOME}/" || return 1; }
     [[ -d "${src_dir}/.c_cpp" ]] && {
-        mkdir -p "${HOME}/.vim"
-        cp -af "${src_dir}/.c_cpp" "${HOME}/.vim/"
+        mkdir -p "${HOME}/.vim" || return 1
+        cp -af "${src_dir}/.c_cpp" "${HOME}/.vim/" || return 1
     }
-    [[ -f "${src_dir}/.zshrc" ]] && cp -af "${src_dir}/.zshrc" "${HOME}/"
+    [[ -f "${src_dir}/.zshrc" ]] && { cp -af "${src_dir}/.zshrc" "${HOME}/" || return 1; }
     [[ -f "${src_dir}/ys_modified.zsh-theme" ]] && {
-        mkdir -p "${HOME}/.oh-my-zsh/custom"
-        cp -af "${src_dir}/ys_modified.zsh-theme" "${HOME}/.oh-my-zsh/custom/"
+        mkdir -p "${HOME}/.oh-my-zsh/custom" || return 1
+        cp -af "${src_dir}/ys_modified.zsh-theme" "${HOME}/.oh-my-zsh/custom/" || return 1
     }
     [[ -f "${src_dir}/init.vim" ]] && {
-        mkdir -p "${HOME}/.config/nvim"
-        cp -af "${src_dir}/init.vim" "${HOME}/.config/nvim/"
+        mkdir -p "${HOME}/.config/nvim" || return 1
+        cp -af "${src_dir}/init.vim" "${HOME}/.config/nvim/" || return 1
     }
-    [[ -f "${src_dir}/.tessent_startup" ]] && cp -af "${src_dir}/.tessent_startup" "${HOME}/"
+    [[ -f "${src_dir}/.tessent_startup" ]] && { cp -af "${src_dir}/.tessent_startup" "${HOME}/" || return 1; }
+    return 0
 }
 
 function ensure_dracula_konsole() {
@@ -490,78 +485,133 @@ function is_remote_ssh() {
 # Usage: ensure_codex_vim [config_path]
 # If no argument given, defaults to ${CODEX_HOME}/config.toml
 function ensure_codex_vim() {
+    emulate -L zsh
     local config="${1:-${CODEX_HOME}/config.toml}"
+    # Resolve symlinks before replacing the target with a sibling temporary file.
+    config="${config:A}"
+    [[ -e "$config" && ! -f "$config" ]] && return 1
+    local temporary
+    mkdir -p -- "${config:h}" || return 1
+    temporary=$(mktemp "${config}.tmp.XXXXXXXX") || return 1
 
     # If file does not exist, create it with the desired config
     if [[ ! -f "$config" ]]; then
-        mkdir -p "$(dirname "$config")"
-        cat > "$config" <<-'EOF'
+        cat > "$temporary" <<-'EOF'
 [tui]
 vim_mode_default = true
 vim_mode_initial_state = "insert"
 vim_mode_after_submit = "insert"
 EOF
+        if (( $? != 0 )) || ! mv -f -- "$temporary" "$config"; then
+            rm -f -- "$temporary"
+            return 1
+        fi
         echo "[OK] Created $config with default vim settings"
         return 0
     fi
 
-    # Use awk to perform section-aware check and modification
+    cp -p -- "$config" "$temporary" || { rm -f -- "$temporary"; return 1; }
+    # Track strings and collections so their contents cannot look like tables.
     awk '
     BEGIN {
-        tui_found = 0
-        in_tui = 0
-        has_default = 0
-        has_initial = 0
-        has_after = 0
+        literal = sprintf("%c", 39)
+        basic_multi = "\"\"\""
+        literal_multi = literal literal literal
+        keys[1] = "vim_mode_default"
+        keys[2] = "vim_mode_initial_state"
+        keys[3] = "vim_mode_after_submit"
+        values[keys[1]] = "true"
+        values[keys[2]] = values[keys[3]] = "\"insert\""
     }
-    /^\[.*\]$/ {
-        if ($0 == "[tui]") {
-            tui_found = 1
-            in_tui = 1
-            print $0
-            next
-        } else {
-            if (in_tui) {
-                # Leaving [tui] section: append missing keys
-                if (!has_default) print "vim_mode_default = true"
-                if (!has_initial) print "vim_mode_initial_state = \"insert\""
-                if (!has_after) print "vim_mode_after_submit = \"insert\""
+
+    function scan(line, i, c, triple) {
+        for (i = 1; i <= length(line); i++) {
+            c = substr(line, i, 1)
+            triple = substr(line, i, 3)
+            if (quote != "") {
+                if (c == "\\" && (quote == "\"" || quote == basic_multi)) {
+                    i++
+                } else if (length(quote) == 3 && triple == quote) {
+                    i += 2
+                    # Four/five closing quotes include quotes in the value.
+                    while (substr(line, i + 1, 1) == c) i++
+                    quote = ""
+                } else if (length(quote) == 1 && c == quote) {
+                    quote = ""
+                }
+            } else if (c == "#") {
+                return i
+            } else if (triple == basic_multi || triple == literal_multi) {
+                quote = triple
+                i += 2
+            } else if (c == "\"" || c == literal) {
+                quote = c
+            } else if (c == "[" || c == "{") {
+                depth++
+            } else if (c == "]" || c == "}") {
+                depth--
             }
-            in_tui = 0
+        }
+        return length(line) + 1
+    }
+
+    function missing_keys(i) {
+        for (i = 1; i <= 3; i++)
+            if (!seen[keys[i]]) print keys[i] " = " values[keys[i]]
+    }
+
+    function bare_name(name, delimiter) {
+        sub(/^[ \t]*/, "", name)
+        sub(/[ \t\r]*$/, "", name)
+        delimiter = substr(name, 1, 1)
+        if ((delimiter == "\"" || delimiter == literal) && substr(name, length(name), 1) == delimiter)
+            name = substr(name, 2, length(name) - 2)
+        return name
+    }
+
+    {
+        continuation = (quote != "" || depth != 0)
+        comment = scan($0)
+        if (skipping) {
+            if (comment <= length($0)) print substr($0, comment)
+            skipping = (quote != "" || depth != 0)
+            next
+        }
+        if (!continuation && /^[ \t]*\[.*\][ \t\r]*(#.*)?$/) {
+            if (in_tui) missing_keys()
+            header = substr($0, 1, comment - 1)
+            sub(/^[ \t]*\[/, "", header)
+            sub(/\][ \t\r]*$/, "", header)
+            in_tui = (bare_name(header) == "tui")
+            if (in_tui) tui_found = 1
+        }
+        key = $0
+        sub(/=.*/, "", key)
+        key = bare_name(key)
+        if (in_tui && !continuation && index($0, "=") && (key in values)) {
+            if (!seen[key]++) {
+                match($0, /^[^=]*=[ \t]*/)
+                suffix = (comment <= length($0) ? " " substr($0, comment) : "")
+                print substr($0, 1, RLENGTH) values[key] suffix
+            }
+            skipping = (quote != "" || depth != 0)
+            next
         }
         print $0
-        next
     }
-    in_tui && /^\s*vim_mode_default\s*=\s*true\s*$/ {
-        has_default = 1
-        print $0
-        next
-    }
-    in_tui && /^\s*vim_mode_initial_state\s*=\s*"insert"\s*$/ {
-        has_initial = 1
-        print $0
-        next
-    }
-    in_tui && /^\s*vim_mode_after_submit\s*=\s*"insert"\s*$/ {
-        has_after = 1
-        print $0
-        next
-    }
-    { print $0 }
     END {
         if (!tui_found) {
             print "[tui]"
-            print "vim_mode_default = true"
-            print "vim_mode_initial_state = \"insert\""
-            print "vim_mode_after_submit = \"insert\""
+            missing_keys()
         } else if (in_tui) {
-            # File ends inside [tui] section
-            if (!has_default) print "vim_mode_default = true"
-            if (!has_initial) print "vim_mode_initial_state = \"insert\""
-            if (!has_after) print "vim_mode_after_submit = \"insert\""
+            missing_keys()
         }
     }
-    ' "$config" > "${config}.tmp" && mv "${config}.tmp" "$config"
+    ' "$config" > "$temporary"
+    if (( $? != 0 )) || ! mv -f -- "$temporary" "$config"; then
+        rm -f -- "$temporary"
+        return 1
+    fi
 
     echo "[OK] Configuration updated (if needed)"
 }
