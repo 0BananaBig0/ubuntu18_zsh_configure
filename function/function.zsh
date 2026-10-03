@@ -281,19 +281,21 @@ function backup_linux_config() {
     fi
 
     [[ -f "${HOME}/.gdbinit" ]] && {
+        mkdir -p "${dest_dir}/others" || return 1
         # 把所有 gcc 相关路径替换为统一占位符
-        sed 's|sys\.path\.insert(0, '\''/[^'\'']*gcc[^'\'']*/python'\'')|sys.path.insert(0, '\''__GCC_PYTHON_PATH__'\'')|g' "${HOME}/.gdbinit" > "${dest_dir}/.gdbinit" || return 1
+        sed 's|sys\.path\.insert(0, '\''/[^'\'']*gcc[^'\'']*/python'\'')|sys.path.insert(0, '\''__GCC_PYTHON_PATH__'\'')|g' "${HOME}/.gdbinit" > "${dest_dir}/others/.gdbinit" || return 1
     }
 
     [[ -f "${HOME}/.vim/coc-settings.json" ]] && {
-        sed '/"xml\.java\.home"/d' "${HOME}/.vim/coc-settings.json" > "${dest_dir}/coc-settings.json" || return 1
+        mkdir -p "${dest_dir}/vim" || return 1
+        sed '/"xml\.java\.home"/d' "${HOME}/.vim/coc-settings.json" > "${dest_dir}/vim/coc-settings.json" || return 1
     }
-    [[ -f "${HOME}/.vimrc" ]] && { cp -af "${HOME}/.vimrc" "${dest_dir}/" || return 1; }
-    [[ -d "${HOME}/.vim/.c_cpp" ]] && { cp -af "${HOME}/.vim/.c_cpp" "${dest_dir}/" || return 1; }
-    [[ -f "${HOME}/.zshrc" ]] && { cp -af "${HOME}/.zshrc" "${dest_dir}/" || return 1; }
-    [[ -f "${HOME}/.oh-my-zsh/custom/ys_modified.zsh-theme" ]] && { cp -af "${HOME}/.oh-my-zsh/custom/ys_modified.zsh-theme" "${dest_dir}/" || return 1; }
-    [[ -f "${HOME}/.config/nvim/init.vim" ]] && { cp -af "${HOME}/.config/nvim/init.vim" "${dest_dir}/" || return 1; }
-    [[ -f "${HOME}/.tessent_startup" ]] && { cp -af "${HOME}/.tessent_startup" "${dest_dir}/" || return 1; }
+    [[ -f "${HOME}/.vim/vimrc" ]] && { mkdir -p "${dest_dir}/vim" || return 1; cp -aTf "${HOME}/.vim/vimrc" "${dest_dir}/vim/vimrc" || return 1; }
+    [[ -d "${HOME}/.vim/.c_cpp" ]] && { mkdir -p "${dest_dir}/vim" || return 1; cp -af "${HOME}/.vim/.c_cpp" "${dest_dir}/vim/" || return 1; }
+    [[ -f "${HOME}/.zshrc" ]] && { mkdir -p "${dest_dir}/shell" || return 1; cp -af "${HOME}/.zshrc" "${dest_dir}/shell/" || return 1; }
+    [[ -f "${HOME}/.oh-my-zsh/custom/ys_modified.zsh-theme" ]] && { mkdir -p "${dest_dir}/shell" || return 1; cp -af "${HOME}/.oh-my-zsh/custom/ys_modified.zsh-theme" "${dest_dir}/shell/" || return 1; }
+    [[ -f "${HOME}/.config/nvim/init.vim" ]] && { mkdir -p "${dest_dir}/vim" || return 1; cp -af "${HOME}/.config/nvim/init.vim" "${dest_dir}/vim/" || return 1; }
+    [[ -f "${HOME}/.tessent_startup" ]] && { mkdir -p "${dest_dir}/others" || return 1; cp -af "${HOME}/.tessent_startup" "${dest_dir}/others/" || return 1; }
     return 0
 }
 
@@ -320,21 +322,21 @@ function restore_linux_config() {
 
     [[ ! -d "${src_dir}" ]] && { echo "ERROR：${src_dir} does not exist" >&2; return 1 }
 
-    [[ -f "${src_dir}/.gdbinit" ]] && {
+    [[ -f "${src_dir}/others/.gdbinit" ]] && {
         local gcc_python_path
         gcc_python_path=$(_find_gcc_python_path)
         if [[ -n "${gcc_python_path}" ]]; then
-            sed "s|__GCC_PYTHON_PATH__|${gcc_python_path}|g" "${src_dir}/.gdbinit" > "${HOME}/.gdbinit" || return 1
+            sed "s|__GCC_PYTHON_PATH__|${gcc_python_path}|g" "${src_dir}/others/.gdbinit" > "${HOME}/.gdbinit" || return 1
         else
-            cp -af "${src_dir}/.gdbinit" "${HOME}/" || return 1
+            cp -af "${src_dir}/others/.gdbinit" "${HOME}/" || return 1
             echo "Warning: Could not find GCC python path, using default .gdbinit" >&2
         fi
     }
 
-    [[ -f "${src_dir}/coc-settings.json" ]] && {
+    [[ -f "${src_dir}/vim/coc-settings.json" ]] && {
         mkdir -p "${HOME}/.vim" || return 1
         local target_file="${HOME}/.vim/coc-settings.json" jdk_home
-        local src_file="${src_dir}/coc-settings.json"
+        local src_file="${src_dir}/vim/coc-settings.json"
 
         if ! _check_java_version; then
             jdk_home=$(_find_latest_jdk)
@@ -351,21 +353,21 @@ function restore_linux_config() {
         chmod 644 "$target_file" || return 1
     }
 
-    [[ -f "${src_dir}/.vimrc" ]] && { cp -af "${src_dir}/.vimrc" "${HOME}/" || return 1; }
-    [[ -d "${src_dir}/.c_cpp" ]] && {
+    [[ -f "${src_dir}/vim/vimrc" ]] && { mkdir -p "${HOME}/.vim" || return 1; cp -aTf "${src_dir}/vim/vimrc" "${HOME}/.vim/vimrc" || return 1; }
+    [[ -d "${src_dir}/vim/.c_cpp" ]] && {
         mkdir -p "${HOME}/.vim" || return 1
-        cp -af "${src_dir}/.c_cpp" "${HOME}/.vim/" || return 1
+        cp -af "${src_dir}/vim/.c_cpp" "${HOME}/.vim/" || return 1
     }
-    [[ -f "${src_dir}/.zshrc" ]] && { cp -af "${src_dir}/.zshrc" "${HOME}/" || return 1; }
-    [[ -f "${src_dir}/ys_modified.zsh-theme" ]] && {
+    [[ -f "${src_dir}/shell/.zshrc" ]] && { cp -af "${src_dir}/shell/.zshrc" "${HOME}/" || return 1; }
+    [[ -f "${src_dir}/shell/ys_modified.zsh-theme" ]] && {
         mkdir -p "${HOME}/.oh-my-zsh/custom" || return 1
-        cp -af "${src_dir}/ys_modified.zsh-theme" "${HOME}/.oh-my-zsh/custom/" || return 1
+        cp -af "${src_dir}/shell/ys_modified.zsh-theme" "${HOME}/.oh-my-zsh/custom/" || return 1
     }
-    [[ -f "${src_dir}/init.vim" ]] && {
+    [[ -f "${src_dir}/vim/init.vim" ]] && {
         mkdir -p "${HOME}/.config/nvim" || return 1
-        cp -af "${src_dir}/init.vim" "${HOME}/.config/nvim/" || return 1
+        cp -af "${src_dir}/vim/init.vim" "${HOME}/.config/nvim/" || return 1
     }
-    [[ -f "${src_dir}/.tessent_startup" ]] && { cp -af "${src_dir}/.tessent_startup" "${HOME}/" || return 1; }
+    [[ -f "${src_dir}/others/.tessent_startup" ]] && { cp -af "${src_dir}/others/.tessent_startup" "${HOME}/" || return 1; }
     return 0
 }
 

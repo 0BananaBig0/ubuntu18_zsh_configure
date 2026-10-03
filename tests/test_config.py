@@ -55,25 +55,25 @@ class ConfigTests(unittest.TestCase):
             self.fail("Updated configuration is invalid TOML: " + str(error))
 
     def test_sparse_linux_backup_and_restore_return_success(self):
-        original = self.write(self.home / ".vimrc", "set number\n")
+        original = self.write(self.home / ".vim/vimrc", "set number\n")
         original.chmod(0o640)
         self.run_zsh('backup_linux_config "$1"', self.backup)
-        self.assertEqual((self.backup / ".vimrc").read_text(), "set number\n")
+        self.assertEqual((self.backup / "vim/vimrc").read_text(), "set number\n")
         original.unlink()
         self.run_zsh('restore_linux_config "$1"', self.backup)
         self.assertEqual(original.read_text(), "set number\n")
         self.assertEqual(original.stat().st_mode & 0o777, 0o640)
 
     def test_linux_backup_does_not_hide_an_earlier_copy_failure(self):
-        self.write(self.home / ".vimrc", "set number\n")
+        self.write(self.home / ".vim/vimrc", "set number\n")
         self.write(self.home / ".tessent_startup", "# later file\n")
-        (self.backup / ".vimrc").mkdir()
+        (self.backup / "vim/vimrc").mkdir(parents=True)
         self.run_zsh('backup_linux_config "$1"', self.backup, succeeds=False)
 
     def test_linux_restore_does_not_hide_an_earlier_copy_failure(self):
-        self.write(self.backup / ".vimrc", "set number\n")
-        self.write(self.backup / ".tessent_startup", "# later file\n")
-        (self.home / ".vimrc").mkdir()
+        self.write(self.backup / "vim/vimrc", "set number\n")
+        self.write(self.backup / "others/.tessent_startup", "# later file\n")
+        (self.home / ".vim/vimrc").mkdir(parents=True)
         self.run_zsh('restore_linux_config "$1"', self.backup, succeeds=False)
 
     def test_linux_backup_reports_destination_creation_failure(self):
@@ -191,7 +191,7 @@ class ConfigTests(unittest.TestCase):
 
     def test_standard_gcc_lookup_avoids_full_find(self):
         printer = self.write(self.share / "gcc-16/python/libstdcxx/v6/printers.py", "# fixture\n")
-        stored = self.write(self.backup / ".gdbinit", "sys.path.insert(0, '__GCC_PYTHON_PATH__')\n")
+        stored = self.write(self.backup / "others/.gdbinit", "sys.path.insert(0, '__GCC_PYTHON_PATH__')\n")
         self.run_zsh('find() { return 1; }; restore_linux_config "$1"', self.backup)
         self.assertEqual((self.home / ".gdbinit").read_text(),
                          "sys.path.insert(0, '" + str(printer.parents[2]) + "')\n")
