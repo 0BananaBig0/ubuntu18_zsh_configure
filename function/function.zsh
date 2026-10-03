@@ -226,62 +226,63 @@ function restore_terminal_config() {
     }
 }
 
+# 提取 java -version 中的版本字符串，保留更新号和构建后缀
+function _java_version_string() {
+    emulate -L zsh
+    unsetopt bash_rematch
+    local MATCH MBEGIN MEND
+    local -a match mbegin mend
+    [[ "$1" =~ '(^|[[:space:]])(openjdk|java)[[:space:]]+(version[[:space:]]+)?"?([0-9]+([._][0-9]+)*([-+][[:alnum:]._-]+)?)("|[[:space:]]|$)' ]] || return 1
+    print -r -- "${match[4]}"
+}
+
 # 辅助：在 /usr/lib/jvm 中找可用的 JDK 根目录
 # 优先级：目录名含 latest > 版本号最大（支持 jre-*/bin/java）
 function _find_latest_jdk() {
-    # 1. 找 /usr/lib/jvm 下目录名包含 latest 的
+    emulate -L zsh
+    [[ -d /usr/lib/jvm ]] || return 1
     local latest_dir
     latest_dir=$(find /usr/lib/jvm -maxdepth 1 -type d -name '*latest*' 2>/dev/null | head -1)
-
     if [[ -n "$latest_dir" ]]; then
-        # 只输出最终结果，不输出中间信息
-        readlink -f "$latest_dir" 2>/dev/null || echo "$latest_dir"
+        readlink -f "$latest_dir" 2>/dev/null || print -r -- "$latest_dir"
         return 0
     fi
 
-    # 2. 兜底：扫描所有目录
-    [[ ! -d /usr/lib/jvm ]] && return 1
-
-    local best_home="" best_ver="" java_bin ver
-
-    for d in /usr/lib/jvm/*; do
-        java_bin=""
-        [[ -x "$d/bin/java" ]] && java_bin="$d/bin/java"
-        [[ -z "$java_bin" && -x "$d/jre/bin/java" ]] && java_bin="$d/jre/bin/java"
-        [[ -z "$java_bin" ]] && continue
-
-        ver=$("$java_bin" -version 2>&1 | awk '/version/{print $NF}' | tr -d '"')
-        [[ -z "$ver" ]] && continue
-
-        if [[ -z "$best_ver" ]] || [[ $(sort -V <<< "$ver"$'\n'"$best_ver" | tail -1) == "$ver" ]]; then
-            best_ver="$ver"
-            best_home="$d"
+    local d java_bin canonical_java output ver best_ver
+    local -A cached_versions homes_by_version
+    for d in /usr/lib/jvm/*(N); do
+        java_bin="$d/bin/java"
+        [[ -x "$java_bin" ]] || java_bin="$d/jre/bin/java"
+        [[ -x "$java_bin" ]] || continue
+        canonical_java="${java_bin:A}"
+        if (( ${+cached_versions[$canonical_java]} )); then
+            ver="${cached_versions[$canonical_java]}"
+        else
+            cached_versions[$canonical_java]=""
+            output=$("$java_bin" -version 2>&1) || continue
+            ver=$(_java_version_string "$output") || continue
+            cached_versions[$canonical_java]="$ver"
         fi
+        [[ -n "$ver" ]] || continue
+        # 相同版本保留最后匹配的路径，包括原有的 JRE 链接路径
+        homes_by_version[$ver]="$d"
     done
 
-    # 只在最后输出一次结果
-    if [[ -n "$best_home" ]]; then
-        echo "$best_home"
-        return 0
-    fi
-
-    return 1
+    (( ${#homes_by_version} )) || return 1
+    # 保留 sort -V 的比较规则，所有版本只排序一次
+    best_ver=$(print -rl -- "${(@k)homes_by_version}" | sort -V | tail -1)
+    print -r -- "${homes_by_version[$best_ver]}"
 }
 
-# 辅助：检查当前 java 是否 >= 11
+# 辅助：检查 PATH 中当前 java 是否 >= 11，不受其他已安装版本影响
 function _check_java_version() {
-    local ver_str major minor
-    ver_str=$(java -version 2>&1 | head -1)
-    # 直接用 grep -oP 提取版本号中的前两个数字
-    local ver_parts
-    ver_parts=$(echo "$ver_str" | grep -oP '\d+\.\d+')
-    [[ -z "$ver_parts" ]] && return 1
-    # 分割版本号
-    IFS='.' read -r major minor <<< "$ver_parts"
-    # Java 8 格式: 1.8 -> major=1, minor=8 -> 实际版本 8
-    [[ "$major" == "1" ]] && major=$minor
-    (( major >= 11 )) && return 0
-    return 1
+    emulate -L zsh
+    local output ver major
+    output=$(java -version 2>&1) || return 1
+    ver=$(_java_version_string "${output%%$'\n'*}") || return 1
+    [[ "$ver" == 1.* ]] && ver="${ver#1.}"
+    major="${ver%%[^0-9]*}"
+    (( 10#$major >= 11 ))
 }
 
 function backup_linux_config() {
