@@ -70,6 +70,17 @@ class ConfigTests(unittest.TestCase):
         (self.backup / "vim/vimrc").mkdir(parents=True)
         self.run_zsh('backup_linux_config "$1"', self.backup, succeeds=False)
 
+    def test_linux_fonts_conf_round_trip(self):
+        original = self.write(self.home / ".config/fontconfig/fonts.conf", "<fontconfig/>\n")
+        original.chmod(0o640)
+        self.run_zsh('backup_linux_config "$1"', self.backup)
+        self.assertEqual((self.backup / "linux/fonts.conf").read_text(), "<fontconfig/>\n")
+        original.unlink()
+        (original.parent).rmdir()
+        self.run_zsh('restore_linux_config "$1"', self.backup)
+        self.assertEqual(original.read_text(), "<fontconfig/>\n")
+        self.assertEqual(original.stat().st_mode & 0o777, 0o640)
+
     def test_linux_restore_does_not_hide_an_earlier_copy_failure(self):
         self.write(self.backup / "vim/vimrc", "set number\n")
         self.write(self.backup / "others/.tessent_startup", "# later file\n")

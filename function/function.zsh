@@ -296,6 +296,7 @@ function backup_linux_config() {
     [[ -f "${HOME}/.oh-my-zsh/custom/ys_modified.zsh-theme" ]] && { mkdir -p "${dest_dir}/shell" || return 1; cp -af "${HOME}/.oh-my-zsh/custom/ys_modified.zsh-theme" "${dest_dir}/shell/" || return 1; }
     [[ -f "${HOME}/.config/nvim/init.vim" ]] && { mkdir -p "${dest_dir}/vim" || return 1; cp -af "${HOME}/.config/nvim/init.vim" "${dest_dir}/vim/" || return 1; }
     [[ -f "${HOME}/.tessent_startup" ]] && { mkdir -p "${dest_dir}/others" || return 1; cp -af "${HOME}/.tessent_startup" "${dest_dir}/others/" || return 1; }
+    [[ -f "${HOME}/.config/fontconfig/fonts.conf" ]] && { mkdir -p "${dest_dir}/linux" || return 1; cp -af "${HOME}/.config/fontconfig/fonts.conf" "${dest_dir}/linux/" || return 1; }
     return 0
 }
 
@@ -368,6 +369,10 @@ function restore_linux_config() {
         cp -af "${src_dir}/vim/init.vim" "${HOME}/.config/nvim/" || return 1
     }
     [[ -f "${src_dir}/others/.tessent_startup" ]] && { cp -af "${src_dir}/others/.tessent_startup" "${HOME}/" || return 1; }
+    [[ -f "${src_dir}/linux/fonts.conf" ]] && {
+        mkdir -p "${HOME}/.config/fontconfig" || return 1
+        cp -af "${src_dir}/linux/fonts.conf" "${HOME}/.config/fontconfig/" || return 1
+    }
     return 0
 }
 
