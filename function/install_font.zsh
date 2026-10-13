@@ -257,12 +257,6 @@ function install_font_juliamono() {
                 printf '    U+%s  ✘ 未提供 (候选: %s)\n' "$cp" "$(print -r -- "$fams" | head -1)"
             fi
         done
-        print -r -- ""
-        print -r -- "==> 挂进回退链 ~/.config/fontconfig/fonts.conf:"
-        print -r -- '    <match target="pattern">'
-        print -r -- '      <test name="family" compare="contains"><string>Monospace</string></test>'
-        print -r -- '      <edit name="family" mode="append" binding="weak"><string>JuliaMono</string></edit>'
-        print -r -- '    </match>'
     } always {
         rm -rf "$work"
     }
