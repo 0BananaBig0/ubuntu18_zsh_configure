@@ -74,7 +74,7 @@ class FontTests(unittest.TestCase):
                 lines = "\n".join("FantasqueSansMono " + str(i) for i in range(count))
                 result = self.run_zsh(
                     'fc-list() { print -r -- "' + lines + '"; }\n'
-                    '__font_finalize /tmp/font-test FantasqueSansMono'
+                    '_font_finalize /tmp/font-test FantasqueSansMono'
                 )
                 self.assertEqual(result.returncode, 0 if count else 1, result.stdout)
                 self.assertEqual("已识别" in result.stdout, bool(count), result.stdout)
@@ -85,7 +85,7 @@ class FontTests(unittest.TestCase):
                 result = self.run_zsh('''
                     fc-list() { print -rl -- 'JuliaMono A' 'JuliaMono B' 'JuliaMono C'; }
                 ''' + failure + '''() { print -rl -- 'JuliaMono A' 'JuliaMono B' 'JuliaMono C'; return 1; }
-                    __font_finalize /tmp/font-test JuliaMono
+                    _font_finalize /tmp/font-test JuliaMono
                 ''')
                 self.assertNotEqual(result.returncode, 0, result.stdout)
 
@@ -97,13 +97,13 @@ class FontTests(unittest.TestCase):
                 print -r -- refreshed > "$FONT_TEST_ROOT/cache"
             }
             fc-list() { print -rl -- 'JuliaMono A' 'JuliaMono B' 'JuliaMono C'; }
-            __font_finalize /tmp/font-test JuliaMono
+            _font_finalize /tmp/font-test JuliaMono
         ''')
         self.assert_success(result)
         self.assertTrue((self.root / "cache").exists())
 
     def test_both_installers_copy_regular_fonts_and_cleanup(self):
-        for family, function in (("FantasqueSansMono", "font-install-fantasque"), ("JuliaMono", "font-install-juliamono")):
+        for family, function in (("FantasqueSansMono", "install_font_fantasque"), ("JuliaMono", "install_font_juliamono")):
             with self.subTest(family=family):
                 result = self.run_zsh(function + " --user --only-regular")
                 self.assert_success(result)
@@ -114,13 +114,13 @@ class FontTests(unittest.TestCase):
                 self.assertFalse(self.work.exists())
 
     def test_combined_install_routes_version_only_to_fantasque(self):
-        result = self.run_zsh("font-install-all --user --only-regular 3.4.0")
+        result = self.run_zsh("install_font_all --user --only-regular 3.4.0")
         self.assert_success(result)
         self.assertTrue((self.fonts / "JuliaMono/JuliaMono-Regular.ttf").exists())
         self.assertIn("/v3.4.0/FantasqueSansMono.zip", (self.root / "urls").read_text())
 
     def test_download_failure_returns_to_caller_and_cleans_up(self):
-        for function in ("font-install-fantasque", "font-install-juliamono"):
+        for function in ("install_font_fantasque", "install_font_juliamono"):
             with self.subTest(function=function):
                 result = self.run_zsh('curl() { return 1; }\n' + function + ''' --user
                     result=$?
@@ -134,13 +134,13 @@ class FontTests(unittest.TestCase):
     def test_juliamono_does_not_overwrite_caller_variables(self):
         result = self.run_zsh('''
             asset=original
-            font-install-juliamono --user || exit 1
+            install_font_juliamono --user || exit 1
             [[ "$asset" == original ]]
         ''')
         self.assert_success(result)
 
     def test_temporary_directory_failure_does_not_start_download(self):
-        for function in ("font-install-fantasque", "font-install-juliamono"):
+        for function in ("install_font_fantasque", "install_font_juliamono"):
             with self.subTest(function=function):
                 result = self.run_zsh('''
                     mktemp() { return 1; }
@@ -152,7 +152,7 @@ class FontTests(unittest.TestCase):
     def test_permission_failures_are_reported(self):
         result = self.run_zsh('''
             chmod() { return 1; }
-            __font_install_to "$FONT_TEST_ROOT/destination" "$FONT_TEST_ROOT/payload/JuliaMono-Regular.ttf"
+            _font_install_to "$FONT_TEST_ROOT/destination" "$FONT_TEST_ROOT/payload/JuliaMono-Regular.ttf"
         ''')
         self.assertNotEqual(result.returncode, 0, result.stdout)
 
@@ -161,19 +161,19 @@ class FontTests(unittest.TestCase):
         binary_dir.mkdir()
         for name in ("python3", "mkdir", "cp", "rm", "chmod", "chown", "grep", "sort"):
             (binary_dir / name).symlink_to(shutil.which(name))
-        result = self.run_zsh('PATH="$FONT_TEST_ROOT/bin"\nfont-install-fantasque --user --only-regular')
+        result = self.run_zsh('PATH="$FONT_TEST_ROOT/bin"\ninstall_font_fantasque --user --only-regular')
         self.assert_success(result)
         self.assertTrue((self.fonts / "FantasqueSansMono/FantasqueSansMono-Regular.ttf").exists())
 
     def test_juliamono_uses_zip_when_tar_download_fails(self):
         (self.root / "fixture.tar.gz").unlink()
-        result = self.run_zsh("font-install-juliamono --user --only-regular")
+        result = self.run_zsh("install_font_juliamono --user --only-regular")
         self.assert_success(result)
         self.assertTrue((self.fonts / "JuliaMono/JuliaMono-Regular.ttf").exists())
         self.assertFalse(self.work.exists())
 
     def test_bad_archives_fail_without_installing_and_cleanup(self):
-        for function, archive in (("font-install-fantasque", "fixture.zip"), ("font-install-juliamono", "fixture.tar.gz")):
+        for function, archive in (("install_font_fantasque", "fixture.zip"), ("install_font_juliamono", "fixture.tar.gz")):
             with self.subTest(function=function):
                 (self.root / archive).write_text("not an archive")
                 result = self.run_zsh(function + " --user")
@@ -182,7 +182,7 @@ class FontTests(unittest.TestCase):
                 self.assertFalse(self.work.exists())
 
     def test_installers_propagate_finalize_failure_when_called_in_condition(self):
-        for function in ("font-install-fantasque", "font-install-juliamono", "font-install-all"):
+        for function in ("install_font_fantasque", "install_font_juliamono", "install_font_all"):
             with self.subTest(function=function):
                 result = self.run_zsh('fc-cache() { return 1; }\nif ' + function + ''' --user; then
                     exit 1
@@ -192,7 +192,7 @@ class FontTests(unittest.TestCase):
                 self.assertFalse(self.work.exists())
 
     def test_help_and_invalid_options_have_no_installation_side_effects(self):
-        for function in ("font-install-fantasque", "font-install-juliamono", "font-install-all"):
+        for function in ("install_font_fantasque", "install_font_juliamono", "install_font_all"):
             for option, status in (("--help", 0), ("--invalid", 1)):
                 with self.subTest(function=function, option=option):
                     result = self.run_zsh(function + " " + option)
@@ -203,7 +203,7 @@ class FontTests(unittest.TestCase):
     def test_regular_filter_does_not_match_temporary_directory_name(self):
         result = self.run_zsh('''
             mktemp() { command mkdir -p "$FONT_TEST_ROOT/Regular work" && print -r -- "$FONT_TEST_ROOT/Regular work"; }
-            font-install-fantasque --user --only-regular
+            install_font_fantasque --user --only-regular
         ''')
         self.assert_success(result)
         self.assertEqual(
@@ -212,7 +212,7 @@ class FontTests(unittest.TestCase):
         )
 
     def test_codepoint_lookup_reports_fontconfig_failure(self):
-        result = self.run_zsh('fc-list() { return 1; }\nfont-who-has U+23fa')
+        result = self.run_zsh('fc-list() { return 1; }\nfont_who_has U+23fa')
         self.assertNotEqual(result.returncode, 0)
 
 

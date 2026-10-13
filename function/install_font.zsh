@@ -7,12 +7,12 @@
 #
 #   source /path/to/install_font.zsh
 #
-#   font-install-fantasque              # nerd-fonts FantasqueSansMono，默认 v3.5.0
-#   font-install-fantasque 3.4.0         # 指定版本
-#   font-install-fantasque --user       # 装到 ~/.local/share/fonts（免 sudo）
-#   font-install-juliamono              # Claude Code / Codex / codegraph 符号 fallback
-#   font-install-juliamono --only-regular
-#   font-install-all --user 3.4.0        # 两个都装，版本仅用于 Fantasque
+#   install_font_fantasque              # nerd-fonts FantasqueSansMono，默认 v3.5.0
+#   install_font_fantasque 3.4.0         # 指定版本
+#   install_font_fantasque --user       # 装到 ~/.local/share/fonts（免 sudo）
+#   install_font_juliamono              # Claude Code / Codex / codegraph 符号 fallback
+#   install_font_juliamono --only-regular
+#   install_font_all --user 3.4.0        # 两个都装，版本仅用于 Fantasque
 #
 # 说明:
 #   · 需要写系统目录时，函数内部自己 sudo（开头 sudo -v 缓存一次凭据，不会反复问密码）
@@ -24,7 +24,7 @@
 # ---------------------------------------------------------------- 内部工具
 
 # 按模式决定是否前置 sudo；用户级安装或已经是 root 时直接执行
-function __font_run() {
+function _font_run() {
     if (( FONT_USE_SUDO )); then
         sudo "$@"
     else
@@ -33,19 +33,19 @@ function __font_run() {
 }
 
 # 修复 SELinux 上下文后刷新目标目录的字体缓存，再验证字体
-function __font_finalize() {
+function _font_finalize() {
     emulate -L zsh
     setopt pipefail
     local dest="$1" keyword="$2"
 
     if command -v restorecon >/dev/null 2>&1; then
         print -r -- "==> 修复 SELinux 上下文"
-        __font_run restorecon -R "$dest" || return 1
+        _font_run restorecon -R "$dest" || return 1
     fi
 
     print -r -- ""
     print -r -- "==> 刷新字体缓存"
-    __font_run fc-cache -f "$dest" || return 1
+    _font_run fc-cache -f "$dest" || return 1
 
     print -r -- ""
     print -r -- "==> 验证"
@@ -65,7 +65,7 @@ function __font_finalize() {
 }
 
 # 安装: 把 ttfs 数组里的字体装到 dest
-function __font_install_to() {
+function _font_install_to() {
     emulate -L zsh
     local dest="$1"
     shift
@@ -73,26 +73,26 @@ function __font_install_to() {
     ttfs=("$@")
 
     print -r -- "==> 安装到 ${dest}"
-    __font_run mkdir -p "$dest" || return 1
-    __font_run cp -f "${ttfs[@]}" "$dest"/ || return 1
+    _font_run mkdir -p "$dest" || return 1
+    _font_run cp -f "${ttfs[@]}" "$dest"/ || return 1
 
     if (( FONT_USE_SUDO || EUID == 0 )); then
-        __font_run chown -R root:root "$dest" || return 1
+        _font_run chown -R root:root "$dest" || return 1
     fi
-    __font_run chmod 755 "$dest" || return 1
+    _font_run chmod 755 "$dest" || return 1
 
     # (N) 避免没有 .ttf 或 .otf 时触发 NOMATCH，导致权限未更新。
     local -a files
     files=("$dest"/**/*.ttf(N) "$dest"/**/*.otf(N))
     if (( ${#files} )); then
-        __font_run chmod 644 "${files[@]}" || return 1
+        _font_run chmod 644 "${files[@]}" || return 1
     fi
     return 0
 }
 
 # ---------------------------------------------------------------- FantasqueSansMono (nerd-fonts)
 
-function font-install-fantasque() {
+function install_font_fantasque() {
     emulate -L zsh
     setopt pipefail
 
@@ -102,7 +102,7 @@ function font-install-fantasque() {
             -u|--user) user_mode=1; shift ;;
             --only-regular) only_regular=1; shift ;;
             -h|--help)
-                print -r -- "用法: font-install-fantasque [--user] [--only-regular] [版本]"
+                print -r -- "用法: install_font_fantasque [--user] [--only-regular] [版本]"
                 print -r -- "  版本默认 3.5.0（nerd-fonts release tag，函数内自动补 v 前缀）"
                 return 0 ;;
             -*) print -u2 -r -- "未知选项: $1"; return 1 ;;
@@ -163,8 +163,8 @@ function font-install-fantasque() {
         fi
         print -r -- "    解出 ${#ttfs} 个文件"
 
-        __font_install_to "$dest" "${ttfs[@]}" || return 1
-        __font_finalize "$dest" "$font"
+        _font_install_to "$dest" "${ttfs[@]}" || return 1
+        _font_finalize "$dest" "$font"
     } always {
         rm -rf "$work"
     }
@@ -172,7 +172,7 @@ function font-install-fantasque() {
 
 # ---------------------------------------------------------------- JuliaMono
 
-function font-install-juliamono() {
+function install_font_juliamono() {
     emulate -L zsh
     setopt pipefail
 
@@ -182,7 +182,7 @@ function font-install-juliamono() {
             -u|--user) user_mode=1; shift ;;
             --only-regular) only_regular=1; shift ;;
             -h|--help)
-                print -r -- "用法: font-install-juliamono [--user] [--only-regular]"
+                print -r -- "用法: install_font_juliamono [--user] [--only-regular]"
                 print -r -- "  JuliaMono 官方只发 GitHub Releases, 无 RPM"
                 print -r -- "  --only-regular 只取 JuliaMono-Regular.ttf (3.2MB)"
                 return 0 ;;
@@ -253,8 +253,8 @@ function font-install-juliamono() {
         fi
         print -r -- "    解出 ${#ttfs} 个 TTF"
 
-        __font_install_to "$dest" "${ttfs[@]}" || return 1
-        __font_finalize "$dest" "JuliaMono" || return 1
+        _font_install_to "$dest" "${ttfs[@]}" || return 1
+        _font_finalize "$dest" "JuliaMono" || return 1
 
         print -r -- ""
         print -r -- "==> 关键符号是否由 JuliaMono 提供"
@@ -280,7 +280,7 @@ function font-install-juliamono() {
 
 # ---------------------------------------------------------------- 组合 / 校验
 
-function font-install-all() {
+function install_font_all() {
     emulate -L zsh
     local arg
     local -a julia_args
@@ -288,13 +288,13 @@ function font-install-all() {
     for arg in "$@"; do
         [[ "$arg" == -* ]] && julia_args+=("$arg")
     done
-    font-install-fantasque "$@" || return 1
+    install_font_fantasque "$@" || return 1
     print -r -- ""
-    font-install-juliamono "${julia_args[@]}"
+    install_font_juliamono "${julia_args[@]}"
 }
 
 # 查询提供指定 Unicode 码位的字体文件
-function font-who-has() {
+function font_who_has() {
     emulate -L zsh
     setopt pipefail
     local cp="${1#U+}"
