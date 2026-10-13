@@ -15,7 +15,7 @@
 #   install_font_all --user 3.4.0        # 两个都装，版本仅用于 Fantasque
 #
 # 说明:
-#   · 需要写系统目录时，函数内部自己 sudo（开头 sudo -v 缓存一次凭据，不会反复问密码）
+#   · 需要写系统目录时，直接通过 sudo 执行命令，由 sudo 按策略决定是否提示输入密码
 #   · root 账号通常没有 zsh，所以这里绝不使用 `sudo zsh -c '...'` 这类写法，
 #     sudo 只包裹 mkdir / cp / chown / chmod / fc-cache / restorecon 这些外部命令
 #   · 常见的坑: 只 chmod 目录不 chmod 文件 → 字体会带可执行位；
@@ -125,11 +125,6 @@ function install_font_fantasque() {
         (( EUID == 0 )) || FONT_USE_SUDO=1
     fi
 
-    if (( FONT_USE_SUDO )); then
-        print -r -- "==> 需要管理员权限，请确认 sudo 密码"
-        sudo -v || { print -u2 -r -- "✘ sudo 认证失败"; return 1; }
-    fi
-
     local work
     work=$(mktemp -d) || { print -u2 -r -- "✘ 无法创建临时目录"; return 1; }
     {
@@ -201,11 +196,6 @@ function install_font_juliamono() {
     else
         dest="/usr/share/fonts/JuliaMono"
         (( EUID == 0 )) || FONT_USE_SUDO=1
-    fi
-
-    if (( FONT_USE_SUDO )); then
-        print -r -- "==> 需要管理员权限，请确认 sudo 密码"
-        sudo -v || { print -u2 -r -- "✘ sudo 认证失败"; return 1; }
     fi
 
     local work

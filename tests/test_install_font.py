@@ -215,6 +215,47 @@ class FontTests(unittest.TestCase):
         result = self.run_zsh('fc-list() { return 1; }\nfont_who_has U+23fa')
         self.assertNotEqual(result.returncode, 0)
 
+    def prepare_system_install(self):
+        # Exercise the non-root branch even when the test runner is root.
+        source = self.script.read_text().replace(
+            "(( EUID == 0 )) || FONT_USE_SUDO=1", "FONT_USE_SUDO=1"
+        ).replace("/usr/share/fonts", "${FONT_TEST_ROOT}/system/fonts")
+        self.script.write_text(source)
+
+    def test_system_install_uses_sudo_commands_without_validation(self):
+        self.prepare_system_install()
+        for family, function in (("FantasqueSansMono", "install_font_fantasque"), ("JuliaMono", "install_font_juliamono")):
+            with self.subTest(family=family):
+                result = self.run_zsh('''
+                    sudo() {
+                        case "$1" in
+                            mkdir|cp|chown|chmod|restorecon|fc-cache)
+                                print -r -- "$1" >> "$FONT_TEST_ROOT/sudo-calls"
+                                "$@" ;;
+                            *) return 77 ;;
+                        esac
+                    }
+                    chown() { return 0; }
+                    fc-list() { print -rl -- "$FONT_TEST_ROOT/system/fonts"/**/*.ttf(N); }
+                ''' + function + " --only-regular")
+                self.assert_success(result)
+                installed = self.root / "system/fonts" / family / (family + "-Regular.ttf")
+                self.assertEqual(installed.read_text(), "font fixture")
+                self.assertEqual(installed.stat().st_mode & 0o777, 0o644)
+                calls = self.root / "sudo-calls"
+                self.assertEqual(set(calls.read_text().splitlines()), {"mkdir", "cp", "chown", "chmod", "restorecon", "fc-cache"})
+                calls.unlink()
+                self.assertFalse(self.work.exists())
+
+    def test_sudo_command_failure_stops_installation_and_cleans_up(self):
+        self.prepare_system_install()
+        for function in ("install_font_fantasque", "install_font_juliamono"):
+            with self.subTest(function=function):
+                result = self.run_zsh('sudo() { return 1; }\n' + function)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertFalse((self.root / "system").exists())
+                self.assertFalse(self.work.exists())
+
 
 if __name__ == "__main__":
     unittest.main()
