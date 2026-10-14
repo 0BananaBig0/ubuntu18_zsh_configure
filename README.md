@@ -9,13 +9,46 @@ over when starting Bash, but functions and aliases do not.
 entry already present. It accepts `before` (default), `after`, and the existing
 Chinese equivalents. Invalid positions and missing directories return failure.
 
+`clean_vim_undo` sources `~/.vim/vimrc` in headless Vim and deletes regular files
+last modified more than 30 days ago from every configured undo directory. It
+prints the number deleted, keeps newer files, symlinks and subdirectories, and
+does not scan subdirectories. Missing directories are skipped. Configuration
+errors, relative paths (including `.`), `/`, and the home directory cause failure
+before cleanup. Use absolute paths; `:set undodir=...` expands `~` and environment
+variables using Vim's normal option handling.
+This requires Vim with `readdir()` (Vim 8.1.1485 or newer); sourcing the vimrc runs
+its normal initialization commands. Deleted files' saved undo history is lost.
+
+To load and run it without restarting Zsh:
+
+```zsh
+source function/clean_vim_undo.zsh
+clean_vim_undo
+```
+
+When the plugin loads in interactive Zsh, it runs this cleanup in the background
+on the first launch, then on the first launch at least seven days after the last
+successful cleanup. Zinit's existing `wait` setting still controls when the
+plugin loads. The vimrc and timestamp checks also run in the background, using
+one detached worker per interactive plugin load. The weekly check uses Zsh's
+native file-age qualifier; it needs no cron job or continuously running timer.
+A native `zsh/system` file lock prevents
+duplicate cleanup from simultaneous terminals. Successful runs are quiet;
+failures leave the timestamp unchanged and retry on the next launch.
+
+The timestamp is `${XDG_STATE_HOME:-$HOME/.local/state}/ubuntu18_zsh_configure/vim-undo-cleanup`.
+Noninteractive shells and installations without `~/.vim/vimrc` skip the check.
+
 Run the regression checks with Zsh and Python 3 (standard library only):
 
 ```sh
 python3 tests/test_plugin.py
 python3 tests/test_java.py
+python3 tests/function/test_clean_vim_undo.py
+python3 tests/function/test_clean_vim_undo_weekly.py
 zsh -n ubuntu18_zsh_configure.plugin.zsh
 zsh -n function/function.zsh
+zsh -n function/clean_vim_undo.zsh
 ```
 
 The tests exercise environment updates, project-root discovery, and optional

@@ -8,6 +8,8 @@ for script in "${PLUGIN_DIR}"/function/*.zsh(.N); do
     source "${script}"
 done
 
+_clean_vim_undo_weekly
+
 
 
 # Initialize some envs
