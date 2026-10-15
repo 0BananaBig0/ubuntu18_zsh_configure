@@ -81,6 +81,21 @@ class ConfigTests(unittest.TestCase):
         self.assertEqual(original.read_text(), "<fontconfig/>\n")
         self.assertEqual(original.stat().st_mode & 0o777, 0o640)
 
+    def test_linux_gtk_settings_round_trip(self):
+        settings = "[Settings]\ngtk-theme-name=Adwaita\n"
+        original = self.write(self.home / ".config/gtk-3.0/settings.ini", settings)
+        original.chmod(0o640)
+        self.run_zsh('backup_linux_config "$1"', self.backup)
+        stored = self.backup / "linux/gtk-3.0/settings.ini"
+        self.assertTrue(stored.is_file())
+        self.assertEqual(stored.read_text(), settings)
+        self.assertEqual(stored.stat().st_mode & 0o777, 0o640)
+        original.unlink()
+        original.parent.rmdir()
+        self.run_zsh('restore_linux_config "$1"', self.backup)
+        self.assertEqual(original.read_text(), settings)
+        self.assertEqual(original.stat().st_mode & 0o777, 0o640)
+
     def test_linux_restore_does_not_hide_an_earlier_copy_failure(self):
         self.write(self.backup / "vim/vimrc", "set number\n")
         self.write(self.backup / "others/.tessent_startup", "# later file\n")

@@ -297,6 +297,7 @@ function backup_linux_config() {
     [[ -f "${HOME}/.config/nvim/init.vim" ]] && { mkdir -p "${dest_dir}/vim" || return 1; cp -af "${HOME}/.config/nvim/init.vim" "${dest_dir}/vim/" || return 1; }
     [[ -f "${HOME}/.tessent_startup" ]] && { mkdir -p "${dest_dir}/others" || return 1; cp -af "${HOME}/.tessent_startup" "${dest_dir}/others/" || return 1; }
     [[ -f "${HOME}/.config/fontconfig/fonts.conf" ]] && { mkdir -p "${dest_dir}/linux" || return 1; cp -af "${HOME}/.config/fontconfig/fonts.conf" "${dest_dir}/linux/" || return 1; }
+    [[ -f "${HOME}/.config/gtk-3.0/settings.ini" ]] && { mkdir -p "${dest_dir}/linux/gtk-3.0" || return 1; cp -af "${HOME}/.config/gtk-3.0/settings.ini" "${dest_dir}/linux/gtk-3.0/" || return 1; }
     return 0
 }
 
@@ -372,6 +373,10 @@ function restore_linux_config() {
     [[ -f "${src_dir}/linux/fonts.conf" ]] && {
         mkdir -p "${HOME}/.config/fontconfig" || return 1
         cp -af "${src_dir}/linux/fonts.conf" "${HOME}/.config/fontconfig/" || return 1
+    }
+    [[ -f "${src_dir}/linux/gtk-3.0/settings.ini" ]] && {
+        mkdir -p "${HOME}/.config/gtk-3.0" || return 1
+        cp -af "${src_dir}/linux/gtk-3.0/settings.ini" "${HOME}/.config/gtk-3.0/" || return 1
     }
     return 0
 }
