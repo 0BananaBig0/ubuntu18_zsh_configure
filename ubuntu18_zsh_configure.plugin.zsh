@@ -8,10 +8,6 @@ for script in "${PLUGIN_DIR}"/function/*.zsh(.N); do
     source "${script}"
 done
 
-_clean_vim_undo_weekly
-
-
-
 # Initialize some envs
 export LIBRARY_PATH=$LIBRARY_PATH # for compile-time linking, including static libraries and dynamic libraries
 export LD_LIBRARY_PATH=$LD_LIBRARY_PATH # for load-time linking, merely including dynamic libraries
@@ -317,3 +313,8 @@ if [ -d "${BOSIOS}" ]; then
         source /data/eda/bashrc/bashrc.eda
     fi
 fi
+
+
+
+# Clean Vim undo files after environment setup, including the Vim PATH.
+_clean_vim_undo_weekly

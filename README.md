@@ -16,8 +16,10 @@ does not scan subdirectories. Missing directories are skipped. Configuration
 errors, relative paths (including `.`), `/`, and the home directory cause failure
 before cleanup. Use absolute paths; `:set undodir=...` expands `~` and environment
 variables using Vim's normal option handling.
-This requires Vim with `readdir()` (Vim 8.1.1485 or newer); sourcing the vimrc runs
-its normal initialization commands. Deleted files' saved undo history is lost.
+This requires Vim with `readdir()` (Vim 8.1.1485 or newer) and a vimrc compatible
+with that Vim. Unsupported Vim versions are rejected before loading the vimrc;
+sourcing the vimrc runs its normal initialization commands. Deleted files' saved
+undo history is lost.
 
 To load and run it without restarting Zsh:
 
@@ -26,8 +28,9 @@ source function/clean_vim_undo.zsh
 clean_vim_undo
 ```
 
-When the plugin loads in interactive Zsh, it runs this cleanup in the background
-on the first launch, then on the first launch at least seven days after the last
+After the plugin finishes environment and `PATH` setup in interactive Zsh, it
+runs this cleanup in the background on the first launch, then on the first
+launch at least seven days after the last
 successful cleanup. Zinit's existing `wait` setting still controls when the
 plugin loads. The vimrc and timestamp checks also run in the background, using
 one detached worker per interactive plugin load. The weekly check uses Zsh's
