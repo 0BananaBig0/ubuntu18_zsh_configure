@@ -647,8 +647,10 @@ function acodex() {
         return 1
     fi
 
-    cp -f -- "$config" "$account_config" || return 1
-    sed -i 's/^model_provider[[:space:]]*=[[:space:]]*"custom"[[:space:]]*$/# model_provider = "custom"/' "$account_config" || return 1
+    if [[ ! -e "$account_config" || "$config" -nt "$account_config" ]]; then
+        cp -f -- "$config" "$account_config" || return 1
+        sed -i 's/^model_provider[[:space:]]*=[[:space:]]*"custom"[[:space:]]*$/# model_provider = "custom"/' "$account_config" || return 1
+    fi
 
     command codex --profile account "$@"
 }
