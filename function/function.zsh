@@ -654,3 +654,25 @@ function acodex() {
 
     command codex --profile account "$@"
 }
+
+function dcodex() {
+    local codex_home="${CODEX_HOME:-$HOME/.codex}"
+    local config="${codex_home}/config.toml"
+    local deepseek_config="${codex_home}/deepseek.config.toml"
+
+    if [ ! -f "$config" ]; then
+        echo "Error: config file not found: $config" >&2
+        return 1
+    fi
+
+    if [[ ! -e "$deepseek_config" || "$config" -nt "$deepseek_config" ]]; then
+        if grep -Eq "^model[[:space:]]*=[[:space:]]*(\"\"\"|''')" "$config"; then
+            echo "Error: triple-quoted model is not supported: $config" >&2
+            return 1
+        fi
+        cp -f -- "$config" "$deepseek_config" || return 1
+        sed -E -i "s/^model[[:space:]]*=[[:space:]]*\"([^\"]*)\"([[:space:]]*(#.*)?)$/model = \"deepseek-flash\"\2/; s/^model[[:space:]]*=[[:space:]]*'([^']*)'([[:space:]]*(#.*)?)$/model = \"deepseek-flash\"\2/" "$deepseek_config" || return 1
+    fi
+
+    command codex --profile deepseek "$@"
+}
